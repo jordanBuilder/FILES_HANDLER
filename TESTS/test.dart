@@ -23,7 +23,14 @@ void main() async {
     permissions: ['read', 'write'],
   );
 
-  String result = fichierTest.dezipper('C:\\Users\\Lenovo\\Desktop\\test.zip','C:\\Users\\Lenovo\\Desktop\\extracted');
+  // String result = fichierTest.dezipper('C:\\Users\\Lenovo\\Desktop\\test.zip','C:\\Users\\Lenovo\\Desktop\\extracted');
+  
+  // print(result);
+
+  // String result = fichierTest.copier(fichierTest.path,'C:\\Users\\Lenovo\\Documents\\CopiedFiles');
+  
+  // print(result);
+  String result = fichierTest.deplacer(fichierTest.path,'C:\\Users\\Lenovo\\CuttedFiles');
   
   print(result);
   
