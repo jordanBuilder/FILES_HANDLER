@@ -1,23 +1,19 @@
 import 'dart:io';
-import 'dart:async';
 import 'package:path/path.dart';
-import 'package:archive/archive_io.dart';
-
 import 'repertoire.dart';
 
 class Fichier extends Repertoire {
-  Fichier(
-      {required String name,
-      required String path,
-      required int size,
-      required bool status,
-      required List<String> permissions})
-      : super(
-            name: name,
-            path: path,
-            size: size,
-            status: status,
-            permissions: permissions);
+  Fichier({
+    required String path,
+    List<String> permissions = const [], // Par défaut, liste vide
+  }) : super(path: path) {
+    this.permissions = permissions;
+    initializeProperties(); // Initialise les propriétés héritées
+  }
+
+  @override
+  void initializeProperties() {
+    super.initializeProperties(); // Appel à la méthode de la classe parent
+    type = 'fichier'; // Le type pour un fichier est toujours 'fichier'
+  }
 }
-
-

@@ -1,3 +1,5 @@
+// ignore_for_file: unused_import
+
 import 'dart:io';
 import 'dart:async';
 import 'package:path/path.dart';
@@ -5,21 +7,27 @@ import 'package:archive/archive_io.dart';
 import 'repertoire.dart';
 
 class Dossier extends Repertoire {
-  int nombreDeFichiers;
+  late int
+      nombreDeFichiers; // Assurez-vous que 'nombreDeFichiers' est initialisé correctement
 
   Dossier({
-    required String name,
     required String path,
-    required int size,
-    required bool status,
-    required List<String> permissions,
+    List<String> permissions =
+        const [], // Valeur par défaut pour les permissions
     this.nombreDeFichiers = 0,
-  }) : super(
-            name: name,
-            path: path,
-            size: size,
-            status: status,
-            permissions: permissions);
+  }) : super(path: path) {
+    // Assurez-vous que les propriétés héritées sont correctement initialisées
+    this.permissions = permissions;
+    initializeProperties(); // Initialise les propriétés héritées
+  }
+
+  @override
+  void initializeProperties() {
+    super.initializeProperties(); // Appel au constructeur de la classe parent
+
+    // Le type pour un Dossier est toujours 'dossier', mais vous pouvez ajouter plus de logique ici si nécessaire
+    type = 'dossier';
+  }
 
   String ajouterFichierDansDossier(String filePath) {
     ajouterFichier(filePath);
