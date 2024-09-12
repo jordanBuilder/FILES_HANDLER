@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:io';
 import 'dart:async';
 import 'package:path/path.dart';
@@ -47,15 +48,16 @@ class Repertoire {
     return permissions.contains(permission);
   }
 
-  String zipper(String destinationPath) {
+  Future<String> zipper(String filePath, String destinationPath) async {
     try {
-      final file = File(path);
+      final file = File(filePath);
       final encoder = ZipFileEncoder();
       final archive = Archive();
 
       if (file.existsSync()) {
         final fileData = file.readAsBytesSync();
-        archive.addFile(ArchiveFile(name, fileData.length, fileData));
+        archive.addFile(
+            ArchiveFile(file.path.split('/').last, fileData.length, fileData));
 
         final zipFile = File(destinationPath);
 
@@ -63,25 +65,27 @@ class Repertoire {
           zipFile.deleteSync();
         }
 
-        final zipEncoder = ZipFileEncoder();
-        zipEncoder.create(zipFile.path);
-        zipEncoder.addFile(file);
-        zipEncoder.close();
+        encoder.create(destinationPath);
+        encoder.addFile(file);
+        encoder.close();
 
         return 'Zippage du fichier terminé.';
       } else {
         return 'Le fichier spécifié n\'existe pas.';
       }
     } catch (e) {
-      return 'Erreur lors du zippage: $e';
+      print('Erreur lors du zippage: $e');
+      throw e;
     }
   }
 
-  String dezipper(String zipPath, String destinationPath) {
+// Assurez-vous d'avoir ce package pour la fonction join
+
+  Future<String> dezipper(String zipPath, String destinationPath) async {
     try {
       // Lecture de l'archive
-      final bytes = File(zipPath).readAsBytesSync();
-      final archive = ZipDecoder().decodeBytes(bytes);
+      final archiveBytes = await File(zipPath).readAsBytes();
+      final archive = ZipDecoder().decodeBytes(archiveBytes);
 
       // Extraction de chaque fichier
       for (final file in archive) {
@@ -103,16 +107,21 @@ class Repertoire {
           }
 
           // Écrire le contenu du fichier
-          outFile.writeAsBytesSync(file.content);
+          await outFile.writeAsBytes(file.content);
         } else {
           // Créer le répertoire
-          Directory(filename).createSync(recursive: true);
+          final dir = Directory(filename);
+          if (!dir.existsSync()) {
+            dir.createSync(recursive: true);
+          }
         }
       }
 
       return 'Dézippage du fichier terminé.';
     } catch (e) {
-      return 'Erreur lors du dézippage: $e';
+      print('Erreur lors du dézippage: $e');
+      // Relancer l'erreur pour que la méthode retourne une erreur
+      throw e;
     }
   }
 
@@ -194,6 +203,10 @@ class Repertoire {
     return dir.watch();
   }
 
+  final Set<String> fichiersEnCoursDeTraitement = {};
+final Queue<FileSystemEvent> evenementsEnAttente = Queue<FileSystemEvent>();
+
+
   void ecouterEvenements(
       Repertoire? zipRepertoire, Repertoire? destinationRepertoire) {
     try {
@@ -211,9 +224,13 @@ class Repertoire {
                   destinationRepertoire,
                 );
                 break;
-              // case FileSystemModifyEvent:
-              //   _traiterModification(event as FileSystemModifyEvent);
-              //   break;
+              case FileSystemModifyEvent:
+                _traiterModification(
+                  event as FileSystemModifyEvent,
+                  zipRepertoire,
+                  destinationRepertoire,
+                );
+                break;
               // case FileSystemDeleteEvent:
               //   _traiterSuppression(event as FileSystemDeleteEvent);
               //   break;
@@ -249,21 +266,49 @@ class Repertoire {
           copier(event.path, zipRepertoire.path);
         }
       }
+      // }else if(type == "dossier" && name == "ZIP"){
+      //   if(destinationRepertoire != null){
+      //     dezipper(event.path, zipRepertoire!.path)
+      //     .then((result){
+      //       deplacer(event.path, destinationRepertoire.path);
+      //     }).catchError((error){
+      //       print("Erreur lors de la decompression du fichier ZIP: $error");
+      //     });
+      //   }
+      // }
     }
+  }
 
-    void _traiterModification(FileSystemModifyEvent event) {
-      print('Modification détectée: ${event.path}');
-      // Ajouter une logique pour traiter les modifications
-    }
+  void _traiterModification(FileSystemModifyEvent event,
+      Repertoire? zipRepertoire, Repertoire? destinationRepertoire) {
+    print('Modification détectée: ${event.path}');
 
-    void _traiterSuppression(FileSystemDeleteEvent event) {
-      print('Suppression détectée: ${event.path}');
-      // Ajouter une logique pour gérer les fichiers supprimés
-    }
+    Future.delayed(Duration(seconds: 2), () {
+      if (type == "dossier" && name == "ZIP") {
+        if (destinationRepertoire != null) {
+          final file = File(event.path);
+          if (file.existsSync()) {
+            dezipper(event.path, zipRepertoire!.path).then((result) {
+              deplacer(event.path, destinationRepertoire.path);
+            }).catchError((error) {
+              print("Erreur lors de la decompression du fichier ZIP: $error");
+            });
+          } else {
+            print("Le fichier ZIP n'existe pas: ${event.path}");
+          }
+        }
+      }
+    });
+    // Ajouter une logique pour traiter les modifications
+  }
 
-    String ajouterPermissions(String permission) {
-      permissions.add(permission);
-      return "Permission " + permission + "ajouté";
-    }
+  void _traiterSuppression(FileSystemDeleteEvent event) {
+    print('Suppression détectée: ${event.path}');
+    // Ajouter une logique pour gérer les fichiers supprimés
+  }
+
+  String ajouterPermissions(String permission) {
+    permissions.add(permission);
+    return "Permission " + permission + "ajouté";
   }
 }
