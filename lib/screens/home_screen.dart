@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'details_page.dart'; 
 import '../models/repertoire.dart';
 import '../models/dossier.dart';
-final _windowsPathRegex = RegExp(r'^([a-zA-Z]:\\[^\0<>:"/\\|?*\n\r]+)*\\?$');
+
+final _windowsPathRegex = RegExp(r'^[a-zA-Z]:\\[^<>:"/\\|?*\n\r]+(\\[^<>:"/\\|?*\n\r]+)*\\?$');
+
+
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -37,7 +40,6 @@ class _HomeScreenState extends State<HomeScreen> {
       final zipPath = _zipPathController.text;
       final localePath = _localePathController.text;
 
-      // Pour démonstration
        Repertoire remoteRepertoire = Dossier(path: remotePath);
       Repertoire zipRepertoire = Dossier(path: zipPath);
       Repertoire localRepertoire = Dossier(path: localePath);

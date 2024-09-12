@@ -16,7 +16,7 @@ class Repertoire {
   late String type;
   List<String> permissions = [];
 
-  Repertoire({required this.path}){
+  Repertoire({required this.path}) {
     status = RepertoireStatus.nonSurveille;
     initializeProperties();
   }
@@ -38,10 +38,10 @@ class Repertoire {
     size = fileStat.size;
   }
 
-void changerStatut(RepertoireStatus nouveauStatut) {
+  void changerStatut(RepertoireStatus nouveauStatut) {
     status = nouveauStatut;
   }
-  
+
   //Methode pour zipper un fichier
   bool hasPermission(String permission) {
     return permissions.contains(permission);
@@ -189,13 +189,81 @@ void changerStatut(RepertoireStatus nouveauStatut) {
     }
   }
 
-  Stream<FileSystemEvent> surveiller(String folderPath) {
-    final dir = Directory(folderPath);
+  Stream<FileSystemEvent> surveiller() {
+    final dir = Directory(path);
     return dir.watch();
   }
 
-  String ajouterPermissions(String permission) {
-    permissions.add(permission);
-    return "Permission " + permission + "ajouté";
+  void ecouterEvenements(
+      Repertoire? zipRepertoire, Repertoire? destinationRepertoire) {
+    try {
+      final stream = Directory(path).watch();
+      changerStatut(RepertoireStatus.surveille);
+
+      stream.listen(
+        (FileSystemEvent event) {
+          try {
+            switch (event.runtimeType) {
+              case FileSystemCreateEvent:
+                _traiterCreation(
+                  event as FileSystemCreateEvent,
+                  zipRepertoire,
+                  destinationRepertoire,
+                );
+                break;
+              // case FileSystemModifyEvent:
+              //   _traiterModification(event as FileSystemModifyEvent);
+              //   break;
+              // case FileSystemDeleteEvent:
+              //   _traiterSuppression(event as FileSystemDeleteEvent);
+              //   break;
+              default:
+                // Gérer d'autres types d'événements si nécessaire
+                print('Événement non géré: ${event.runtimeType}');
+                break;
+            }
+          } catch (e) {
+            // Gérer les erreurs spécifiques aux opérations d'événements
+            print('Erreur lors du traitement de l\'événement: $e');
+          }
+        },
+        onError: (error) {
+          // Gérer les erreurs liées au flux de surveillance
+          print('Erreur de surveillance du répertoire: $error');
+        },
+      );
+    } catch (e) {
+      // Gérer les erreurs liées à la création du flux de surveillance
+      print('Erreur lors de la création du flux de surveillance: $e');
+    }
+  }
+
+  void _traiterCreation(FileSystemCreateEvent event, Repertoire? zipRepertoire,
+      Repertoire? destinationRepertoire) {
+    print('Création détectée: ${event.path}');
+
+    // Vérifie si l'événement concerne un fichier ZIP
+    if (event.path.endsWith('.zip')) {
+      if (type == 'dossier' && name == 'REMOTE') {
+        if (zipRepertoire != null) {
+          copier(event.path, zipRepertoire.path);
+        }
+      }
+    }
+
+    void _traiterModification(FileSystemModifyEvent event) {
+      print('Modification détectée: ${event.path}');
+      // Ajouter une logique pour traiter les modifications
+    }
+
+    void _traiterSuppression(FileSystemDeleteEvent event) {
+      print('Suppression détectée: ${event.path}');
+      // Ajouter une logique pour gérer les fichiers supprimés
+    }
+
+    String ajouterPermissions(String permission) {
+      permissions.add(permission);
+      return "Permission " + permission + "ajouté";
+    }
   }
 }
