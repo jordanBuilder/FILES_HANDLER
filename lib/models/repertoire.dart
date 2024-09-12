@@ -51,31 +51,34 @@ class Repertoire {
   Future<String> zipper(String filePath, String destinationPath) async {
     try {
       final file = File(filePath);
-      final encoder = ZipFileEncoder();
-      final archive = Archive();
-
-      if (file.existsSync()) {
-        final fileData = file.readAsBytesSync();
-        archive.addFile(
-            ArchiveFile(file.path.split('/').last, fileData.length, fileData));
-
-        final zipFile = File(destinationPath);
-
-        if (zipFile.existsSync()) {
-          zipFile.deleteSync();
-        }
-
-        encoder.create(destinationPath);
-        encoder.addFile(file);
-        encoder.close();
-
-        return 'Zippage du fichier terminé.';
-      } else {
+      if (!file.existsSync()) {
         return 'Le fichier spécifié n\'existe pas.';
       }
+
+      // Lire les données du fichier
+      final fileData = file.readAsBytesSync();
+      final archive = Archive();
+
+      // Ajouter le fichier à l'archive
+      archive.addFile(
+          ArchiveFile(file.uri.pathSegments.last, fileData.length, fileData));
+
+      // Créer le fichier zip
+      final zipFilePath = destinationPath;
+      final zipFile = File(zipFilePath);
+      if (zipFile.existsSync()) {
+        zipFile.deleteSync();
+      }
+
+      final encoder = ZipFileEncoder();
+      encoder.create(zipFilePath);
+      encoder.addArchiveFile(archive as ArchiveFile);
+      encoder.close();
+
+      return 'Zippage du fichier terminé.';
     } catch (e) {
       print('Erreur lors du zippage: $e');
-      throw e;
+      return 'Erreur lors du zippage: $e';
     }
   }
 
@@ -86,6 +89,8 @@ class Repertoire {
       // Lecture de l'archive
       final archiveBytes = await File(zipPath).readAsBytes();
       final archive = ZipDecoder().decodeBytes(archiveBytes);
+
+      String firstExtractedPath = '';
 
       // Extraction de chaque fichier
       for (final file in archive) {
@@ -115,9 +120,14 @@ class Repertoire {
             dir.createSync(recursive: true);
           }
         }
+
+        if (firstExtractedPath.isEmpty) {
+          firstExtractedPath = filename;
+        }
       }
 
-      return 'Dézippage du fichier terminé.';
+      print("dezippage du fichier terminé");
+      return firstExtractedPath;
     } catch (e) {
       print('Erreur lors du dézippage: $e');
       // Relancer l'erreur pour que la méthode retourne une erreur
@@ -125,7 +135,8 @@ class Repertoire {
     }
   }
 
-  String copier(String sourceFilePath, String destinationDirPath) {
+  Future<String> copier(
+      String sourceFilePath, String destinationDirPath) async {
     try {
       // Créer l'objet File pour le fichier source
       final sourceFile = File(sourceFilePath);
@@ -149,7 +160,7 @@ class Repertoire {
       final destinationFilePath = join(destinationDirPath, fileName);
 
       // Copier le fichier
-      sourceFile.copySync(destinationFilePath);
+      await sourceFile.copy(destinationFilePath);
 
       return "Fichier copié avec succès vers $destinationFilePath";
     } catch (e) {
@@ -157,37 +168,41 @@ class Repertoire {
     }
   }
 
-  String deplacer(String sourceFilePath, String destinationDirPath) {
-    try {
-      // Créer l'objet File pour le fichier source
-      final sourceFile = File(sourceFilePath);
+  Future<String> deplacer(String sourceFilePath, String destinationDirPath) async {
+  try {
+    // Créer l'objet File pour le fichier source
+    final sourceFile = File(sourceFilePath);
 
-      // Vérifier si le fichier source existe
-      if (!sourceFile.existsSync()) {
-        return "Le fichier source n'existe pas.";
-      }
-
-      // Créer l'objet Directory pour le répertoire de destination
-      final destinationDir = Directory(destinationDirPath);
-
-      // Vérifier si le répertoire de destination existe, sinon le créer
-      if (!destinationDir.existsSync()) {
-        destinationDir.createSync(recursive: true);
-      }
-
-      // Construire le chemin complet du fichier de destination
-      final fileName = basename(
-          sourceFilePath); // Récupère le nom du fichier depuis le chemin source
-      final destinationFilePath = join(destinationDirPath, fileName);
-
-      // Déplacer le fichier
-      sourceFile.renameSync(destinationFilePath);
-
-      return "Fichier déplacé avec succès vers $destinationFilePath";
-    } catch (e) {
-      return "Erreur lors du déplacement du fichier: $e";
+    // Vérifier si le fichier source existe
+    if (!sourceFile.existsSync()) {
+      return "Le fichier source n'existe pas.";
     }
+
+    // Créer l'objet Directory pour le répertoire de destination
+    final destinationDir = Directory(destinationDirPath);
+
+    // Vérifier si le répertoire de destination existe, sinon le créer
+    if (!destinationDir.existsSync()) {
+      destinationDir.createSync(recursive: true);
+    }
+
+    // Construire le chemin complet du fichier de destination
+    final fileName = basename(sourceFilePath); // Récupère le nom du fichier
+    final destinationFilePath = join(destinationDirPath, fileName);
+
+    // Copier le fichier au lieu de le renommer
+    await sourceFile.copy(destinationFilePath);
+
+    // Supprimer le fichier source après la copie
+    await sourceFile.delete();
+
+    print("Fichier déplacé avec succès vers $destinationFilePath");
+    return "Fichier déplacé avec succès vers $destinationFilePath";
+  } catch (e) {
+    print("Erreur lors du déplacement du fichier: $e");
+    return "Erreur lors du déplacement du fichier: $e";
   }
+}
 
   String ajouterFichier(String filePath) {
     try {
@@ -203,12 +218,8 @@ class Repertoire {
     return dir.watch();
   }
 
-  final Set<String> fichiersEnCoursDeTraitement = {};
-final Queue<FileSystemEvent> evenementsEnAttente = Queue<FileSystemEvent>();
-
-
-  void ecouterEvenements(
-      Repertoire? zipRepertoire, Repertoire? destinationRepertoire) {
+  void ecouterEvenements(Repertoire? remoteRepertoire,
+      Repertoire? zipRepertoire, Repertoire? localRepertoire) {
     try {
       final stream = Directory(path).watch();
       changerStatut(RepertoireStatus.surveille);
@@ -216,21 +227,28 @@ final Queue<FileSystemEvent> evenementsEnAttente = Queue<FileSystemEvent>();
       stream.listen(
         (FileSystemEvent event) {
           try {
+            final sourceRepertoire = this;
             switch (event.runtimeType) {
               case FileSystemCreateEvent:
-                _traiterCreation(
-                  event as FileSystemCreateEvent,
-                  zipRepertoire,
-                  destinationRepertoire,
-                );
+                if (sourceRepertoire == remoteRepertoire) {
+                  print('Création détectée dans REMOTE, destination: ZIP');
+                  _traiterCreation(
+                    event as FileSystemCreateEvent,
+                    zipRepertoire, // ZIP comme destination
+                    localRepertoire,
+                  );
+                } else if (sourceRepertoire == localRepertoire) {
+                  print('Création détectée dans LOCALE, destination: ZIP');
+                  _traiterCreation(
+                    event as FileSystemCreateEvent,
+                    zipRepertoire, // ZIP comme destination
+                    remoteRepertoire,
+                  );
+                }
                 break;
-              case FileSystemModifyEvent:
-                _traiterModification(
-                  event as FileSystemModifyEvent,
-                  zipRepertoire,
-                  destinationRepertoire,
-                );
-                break;
+              // case FileSystemModifyEvent:
+              //   _traiterModification(event as FileSystemModifyEvent);
+              //   break;
               // case FileSystemDeleteEvent:
               //   _traiterSuppression(event as FileSystemDeleteEvent);
               //   break;
@@ -255,60 +273,78 @@ final Queue<FileSystemEvent> evenementsEnAttente = Queue<FileSystemEvent>();
     }
   }
 
-  void _traiterCreation(FileSystemCreateEvent event, Repertoire? zipRepertoire,
-      Repertoire? destinationRepertoire) {
+  Future<void> _traiterCreation(FileSystemCreateEvent event,
+      Repertoire? zipRepertoire, Repertoire? destinationRepertoire) async {
     print('Création détectée: ${event.path}');
 
     // Vérifie si l'événement concerne un fichier ZIP
     if (event.path.endsWith('.zip')) {
       if (type == 'dossier' && name == 'REMOTE') {
         if (zipRepertoire != null) {
-          copier(event.path, zipRepertoire.path);
+          if (File(event.path).existsSync()) {
+            // ignore: non_constant_identifier_names
+            String repertoire_path = await dezipper(event.path, zipRepertoire.path);
+          if(destinationRepertoire != null){
+            print(destinationRepertoire.path);
+            await deplacer(repertoire_path, destinationRepertoire.path);
+            print("fichier deplacé");
+          }
+          } else {
+            // ignore: avoid_print
+            print("Le fichier ZIP n'existe pas ou est en cours d'écriture : ${event.path}");
+          }
         }
       }
-      // }else if(type == "dossier" && name == "ZIP"){
-      //   if(destinationRepertoire != null){
-      //     dezipper(event.path, zipRepertoire!.path)
-      //     .then((result){
-      //       deplacer(event.path, destinationRepertoire.path);
-      //     }).catchError((error){
-      //       print("Erreur lors de la decompression du fichier ZIP: $error");
-      //     });
+      // } else {
+      //   if (type == "dossier" && name == "ZIP") {
+      //     if (destinationRepertoire != null) {
+      //       await deplacer(event.path, destinationRepertoire.path);
+      //     }
       //   }
       // }
     }
-  }
 
-  void _traiterModification(FileSystemModifyEvent event,
-      Repertoire? zipRepertoire, Repertoire? destinationRepertoire) {
-    print('Modification détectée: ${event.path}');
-
-    Future.delayed(Duration(seconds: 2), () {
+    Future<void> _traiterModification(FileSystemModifyEvent event,
+        Repertoire? zipRepertoire, Repertoire? destinationRepertoire) async {
+      print('Modification détectée: ${event.path}');
       if (type == "dossier" && name == "ZIP") {
         if (destinationRepertoire != null) {
           final file = File(event.path);
           if (file.existsSync()) {
-            dezipper(event.path, zipRepertoire!.path).then((result) {
-              deplacer(event.path, destinationRepertoire.path);
-            }).catchError((error) {
-              print("Erreur lors de la decompression du fichier ZIP: $error");
-            });
+            print("Sur le point de deplacer");
+            String result =
+                await deplacer(event.path, destinationRepertoire.path);
+          } else {
+            print("Le fichier ZIP n'existe pas: ${event.path}");
+          }
+        }
+      } else if (type == "dossier" && name == "LOCALE") {
+        if (destinationRepertoire != null) {
+          final file = File(event.path);
+          if (file.existsSync()) {
+            print('destination pour LOCALE: ${destinationRepertoire.path}');
+            await zipper(event.path, destinationRepertoire.path);
           } else {
             print("Le fichier ZIP n'existe pas: ${event.path}");
           }
         }
       }
-    });
-    // Ajouter une logique pour traiter les modifications
-  }
+      // Ajouter une logique pour traiter les modifications
+    }
 
-  void _traiterSuppression(FileSystemDeleteEvent event) {
-    print('Suppression détectée: ${event.path}');
-    // Ajouter une logique pour gérer les fichiers supprimés
-  }
+    void _traiterSuppression(FileSystemDeleteEvent event) {
+      print('Suppression détectée: ${event.path}');
+      // Ajouter une logique pour gérer les fichiers supprimés
+    }
 
-  String ajouterPermissions(String permission) {
-    permissions.add(permission);
-    return "Permission " + permission + "ajouté";
+    String ajouterPermissions(String permission) {
+      permissions.add(permission);
+      return "Permission " + permission + "ajouté";
+    }
+
+    Future<void> _traiterMove(FileSystemMoveEvent event,
+        Repertoire? zipRepertoire, Repertoire? destinationRepertoire) async {
+      print('Déplacement détecté: ${event.path}');
+    }
   }
 }

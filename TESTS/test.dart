@@ -17,10 +17,10 @@ void main() async {
   // print(result);
   
     Fichier fichierTest = Fichier(
-    name: 'test.zip',
+   
     path: 'C:\\Users\\Lenovo\\Desktop\\test.zip', // Assurez-vous que ce fichier existe
-    size: 1024,
-    permissions: ['read', 'write'],
+  
+  
   );
 
   // String result = fichierTest.dezipper('C:\\Users\\Lenovo\\Desktop\\test.zip','C:\\Users\\Lenovo\\Desktop\\extracted');

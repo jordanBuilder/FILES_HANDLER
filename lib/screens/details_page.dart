@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import '../models/repertoire.dart';
 
@@ -19,27 +21,37 @@ class DetailsPage extends StatefulWidget {
 
 class _DetailsPageState extends State<DetailsPage> {
   Repertoire? selectedRepertoire;
-
+   StreamController<String>? _eventStreamController;
+  Stream<String>? _eventStream;
    @override
   void initState() {
     super.initState();
     
+     _eventStreamController = StreamController<String>.broadcast();
+    _eventStream = _eventStreamController!.stream;
+
     // Démarrer la surveillance des répertoires lorsque la page est chargée
     widget.remoteRepertoire.ecouterEvenements(
-      widget.zipRepertoire,
-      widget.localRepertoire
-    );
-    
-    widget.zipRepertoire.ecouterEvenements(
-      widget.zipRepertoire,
-      widget.localRepertoire
-    );
-    
-    widget.localRepertoire.ecouterEvenements(
-      widget.zipRepertoire,
-      widget.remoteRepertoire
-    );
+    widget.remoteRepertoire, 
+    widget.zipRepertoire, 
+    widget.localRepertoire
+  );
+
+  widget.localRepertoire.ecouterEvenements(
+    widget.remoteRepertoire, 
+    widget.zipRepertoire, 
+    widget.localRepertoire
+  );
   }
+  @override
+  void dispose() {
+    // Assurez-vous de fermer le StreamController lorsque le widget est détruit
+    _eventStreamController?.close();
+    super.dispose();
+  }
+
+
+
 
   @override
   Widget build(BuildContext context) {
