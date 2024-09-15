@@ -213,88 +213,84 @@ class Repertoire {
     }
   }
 
-Future<String> deplacer(String sourcePath, String destinationDirPath) async {
-  try {
-    sourcePath = normalize(sourcePath);
-    final entityType = FileSystemEntity.typeSync(sourcePath);
+  Future<String> deplacer(String sourcePath, String destinationDirPath) async {
+    try {
+      sourcePath = normalize(sourcePath);
+      final entityType = FileSystemEntity.typeSync(sourcePath);
 
-    // Créer l'objet Directory pour le répertoire de destination
-    final destinationDir = Directory(destinationDirPath);
+      // Créer l'objet Directory pour le répertoire de destination
+      final destinationDir = Directory(destinationDirPath);
 
-    // Vérifier si le répertoire de destination existe, sinon le créer
-    if (!destinationDir.existsSync()) {
-      destinationDir.createSync(recursive: true);
-    }
-
-    if (entityType == FileSystemEntityType.file) {
-      // Si c'est un fichier
-      final sourceFile = File(sourcePath);
-      final fileName = basename(sourcePath); // Récupère le nom du fichier
-      final destinationFilePath = join(destinationDirPath, fileName);
-
-      // Si un fichier avec le même nom existe déjà à l'emplacement de destination, le supprimer
-      if (File(destinationFilePath).existsSync()) {
-         File(destinationFilePath).deleteSync();
-        print("Fichier existant supprimé: $destinationFilePath");
+      // Vérifier si le répertoire de destination existe, sinon le créer
+      if (!destinationDir.existsSync()) {
+        destinationDir.createSync(recursive: true);
       }
 
-      // Copier le fichier
-      await sourceFile.copy(destinationFilePath);
+      if (entityType == FileSystemEntityType.file) {
+        // Si c'est un fichier
+        final sourceFile = File(sourcePath);
+        final fileName = basename(sourcePath); // Récupère le nom du fichier
+        final destinationFilePath = join(destinationDirPath, fileName);
 
-      // Supprimer le fichier source après la copie
-      await sourceFile.delete();
+        // Si un fichier avec le même nom existe déjà à l'emplacement de destination, le supprimer
+        if (File(destinationFilePath).existsSync()) {
+          File(destinationFilePath).deleteSync();
+          print("Fichier existant supprimé: $destinationFilePath");
+        }
 
-      print("Fichier déplacé avec succès vers $destinationFilePath");
-      return "Fichier déplacé avec succès vers $destinationFilePath";
+        // Copier le fichier
+        await sourceFile.copy(destinationFilePath);
 
-    } else if (entityType == FileSystemEntityType.directory) {
-      // Si c'est un dossier
-      final sourceDir = Directory(sourcePath);
-      print("sourceDir: $sourceDir");
-      final dirName = basename(sourcePath); // Récupère le nom du dossier
-      print("basename: $dirName");
-      final destinationFolderPath = destinationDirPath;
-      print("dossier destination pour le deplacement : ${destinationFolderPath}");
+        // Supprimer le fichier source après la copie
+        await sourceFile.delete();
 
-      // Si un dossier avec le même nom existe déjà à l'emplacement de destination, le supprimer
-      if (Directory(join(destinationFolderPath,dirName)).existsSync()) {
-         Directory(destinationFolderPath).deleteSync(recursive: true);
-        print("Dossier existant supprimé: $destinationFolderPath");
+        print("Fichier déplacé avec succès vers $destinationFilePath");
+        return "Fichier déplacé avec succès vers $destinationFilePath";
+      } else if (entityType == FileSystemEntityType.directory) {
+        // Si c'est un dossier
+        print(sourcePath);
+        final sourceDir = Directory(sourcePath);
+        print("sourceDir: $sourceDir");
+        final dirName = basename(sourcePath); // Récupère le nom du dossier
+        print("basename: $dirName");
+        final destinationFolderPath = join(destinationDirPath, dirName);
+        print(
+            "dossier destination pour le deplacement : ${destinationFolderPath}");
+
+        // Si un dossier avec le même nom existe déjà à l'emplacement de destination, le supprimer
+        if (Directory(join(destinationFolderPath, dirName)).existsSync()) {
+          Directory(destinationFolderPath).deleteSync(recursive: true);
+          print("Dossier existant supprimé: $destinationFolderPath");
+        }
+
+        // Renommer le dossier (déplacer)
+        sourceDir.renameSync(destinationFolderPath);
+        //  await copyDirectory(sourceDir,destinationDir);
+
+        print("Dossier déplacé avec succès vers $destinationFolderPath");
+
+        return "Dossier déplacé avec succès vers $destinationFolderPath";
+      } else {
+        return "Le chemin spécifié n'est ni un fichier ni un répertoire.";
       }
-
-      // Renommer le dossier (déplacer)
-       sourceDir.renameSync(destinationFolderPath);
-    //  await copyDirectory(sourceDir,destinationDir);
-
-      print("Dossier déplacé avec succès vers $destinationFolderPath");
-
-      return "Dossier déplacé avec succès vers $destinationFolderPath";
-
-    } else {
-      return "Le chemin spécifié n'est ni un fichier ni un répertoire.";      
+    } catch (e) {
+      print("Erreur lors du déplacement: $e");
+      return "Erreur lors du déplacement: $e";
     }
-  } catch (e) {
-    print("Erreur lors du déplacement: $e");
-    return "Erreur lors du déplacement: $e";
   }
-}
 
-
- copyDirectory(Directory source, Directory destination) =>
-       source.listSync(recursive: false)
-          .forEach((var entity) {
-            if(entity is Directory) {
-              var newDirectory = Directory(join(destination.absolute.path, basename(entity.path)));
-              print("Nouveau dossier à créer:  $newDirectory");
-              newDirectory.createSync();  
-              copyDirectory(entity.absolute, newDirectory);
-            } else if (entity is File) {
-              entity.copySync(join(destination.path,basename(entity.path)));
-            }
+  copyDirectory(Directory source, Directory destination) =>
+      source.listSync(recursive: false).forEach((var entity) {
+        if (entity is Directory) {
+          var newDirectory =
+              Directory(join(destination.absolute.path, basename(entity.path)));
+          print("Nouveau dossier à créer:  $newDirectory");
+          newDirectory.createSync();
+          copyDirectory(entity.absolute, newDirectory);
+        } else if (entity is File) {
+          entity.copySync(join(destination.path, basename(entity.path)));
+        }
       });
-
-
-
 
   String ajouterFichier(String filePath) {
     try {
@@ -386,7 +382,6 @@ Future<String> deplacer(String sourcePath, String destinationDirPath) async {
             String repertoire_path =
                 await dezipper(event.path, zipRepertoire.path);
             if (destinationRepertoire != null) {
-              
               print("Deplacement vers ${destinationRepertoire.path}");
               await deplacer(repertoire_path, destinationRepertoire.path);
             }
@@ -427,11 +422,9 @@ Future<String> deplacer(String sourcePath, String destinationDirPath) async {
 
               if (zipFilePath.endsWith('.zip')) {
                 print('Zippage terminé, fichier créé à: $zipFilePath');
-                print(
-                    "************** ****************** *****************");
+                print("************** ****************** *****************");
                 await deplacer(zipFilePath, destinationRepertoire!.path);
-                print(
-                    "************** ****************** *****************");
+                print("************** ****************** *****************");
               } else {
                 print('Erreur lors du zippage: $zipFilePath');
               }
@@ -448,7 +441,6 @@ Future<String> deplacer(String sourcePath, String destinationDirPath) async {
       }
     }
   }
-
 
   void _traiterSuppression(FileSystemDeleteEvent event) {
     print('Suppression détectée: ${event.path}');
