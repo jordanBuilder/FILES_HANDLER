@@ -1,10 +1,12 @@
 // ignore_for_file: avoid_print, unused_local_variable, unnecessary_brace_in_string_interps
-
-import 'dart:collection';
 import 'dart:io';
 import 'dart:async';
+import 'package:files_handler/utils/deplacer.dart';
+import 'package:files_handler/utils/dezipper.dart';
+import 'package:files_handler/utils/zipper.dart';
 import 'package:path/path.dart';
-import 'package:archive/archive_io.dart';
+import 'sub_directory_watcher.dart';
+import '../utils/isStableSinceOneMinute.dart';
 
 enum RepertoireStatus {
   surveille,
@@ -41,256 +43,14 @@ class Repertoire {
     size = fileStat.size;
   }
 
-  void changerStatut(RepertoireStatus nouveauStatut) {
+  void _changerStatut(RepertoireStatus nouveauStatut) {
     status = nouveauStatut;
-  }
-
-  Future<DateTime> obtenirDateDerniereModification(String filePath) async {
-    try {
-      final file = File(filePath);
-      final lastModified = await file.lastModified();
-      return lastModified;
-    } catch (e) {
-      print(
-          'Erreur lors de la récupération de la date de la dernière modification: $e');
-      throw e;
-    }
-  }
-
-  Future<bool> estStableDepuisUneMinute(String filePath) async {
-    final file = File(filePath);
-    const Duration attente = Duration(seconds: 18);
-
-    try {
-      // Vérifie si le fichier existe
-      if (!file.existsSync()) {
-        print("Le fichier n'existe pas: $filePath");
-        return false;
-      }
-      DateTime dateDerniereModification =
-          await obtenirDateDerniereModification(filePath);
-
-      // Attendre une minute
-      await Future.delayed(attente);
-
-      // Vérifier la date de la dernière modification après une minute
-      DateTime nouvelleDateDerniereModification =
-          await obtenirDateDerniereModification(filePath);
-
-      // Comparer les deux dates
-      return dateDerniereModification
-          .isAtSameMomentAs(nouvelleDateDerniereModification);
-    } catch (e) {
-      print(
-          'Erreur lors de la récupération de la date de la dernière modification: $e');
-      // Gérer l'erreur, éventuellement en essayant à nouveau ou en retournant false
-      return false;
-    }
   }
 
   //Methode pour zipper un fichier
   bool hasPermission(String permission) {
     return permissions.contains(permission);
   }
-
-  Future<String> zipper(String filePath, String destinationPath) async {
-    try {
-      final file = File(filePath);
-      if (!file.existsSync()) {
-        return 'Le fichier spécifié n\'existe pas.';
-      }
-
-      // Lire les données du fichier
-      final fileData = file.readAsBytesSync();
-      final archiveFile = ArchiveFile(filePath, fileData.length, fileData);
-      final archive = Archive();
-
-      // Ajouter le fichier à l'archive
-      archive.addFile(archiveFile);
-
-      // Créer le fichier zip
-      final zipFilePath = destinationPath;
-      final zipFile = File(zipFilePath);
-      if (zipFile.existsSync()) {
-        zipFile.deleteSync();
-      }
-
-      final zipEncoder = ZipEncoder();
-      final encodedArchive = zipEncoder.encode(archive);
-
-      if (encodedArchive != null) {
-        final zipFile =
-            await File(destinationPath).writeAsBytes(encodedArchive);
-      }
-
-      return zipFilePath;
-    } catch (e) {
-      print('Erreur lors du zippage: $e');
-      return 'Erreur lors du zippage: $e';
-    }
-  }
-
-  Future<String> dezipper(String zipPath, String destinationPath) async {
-    try {
-      // Lecture de l'archive
-      final archiveBytes = await File(zipPath).readAsBytes();
-      final archive = ZipDecoder().decodeBytes(archiveBytes);
-
-      String firstExtractedPath = '';
-
-      // Extraction de chaque fichier
-      for (final file in archive) {
-        final filename = join(destinationPath, file.name);
-
-        if (file.isFile) {
-          // S'assurer que le répertoire parent existe
-          final outFile = File(filename);
-          final parentDir = outFile.parent;
-
-          // Créer les répertoires parents s'ils n'existent pas
-          if (!parentDir.existsSync()) {
-            parentDir.createSync(recursive: true);
-          }
-
-          // Si le fichier existe, le supprimer avant d'écrire le nouveau fichier
-          if (outFile.existsSync()) {
-            outFile.deleteSync();
-          }
-
-          // Écrire le contenu du fichier
-          await outFile.writeAsBytes(file.content);
-        } else {
-          // Créer le répertoire
-          final dir = Directory(filename);
-          if (!dir.existsSync()) {
-            dir.createSync(recursive: true);
-          }
-        }
-
-        if (firstExtractedPath.isEmpty) {
-          firstExtractedPath = filename;
-        }
-      }
-      print("dezippage du repertoire terminé");
-      return firstExtractedPath;
-    } catch (e) {
-      print('Erreur lors du dézippage: $e');
-      // Relancer l'erreur pour que la méthode retourne une erreur
-      throw e;
-    }
-  }
-
-  Future<String> copier(
-      String sourceFilePath, String destinationDirPath) async {
-    try {
-      // Créer l'objet File pour le fichier source
-      final sourceFile = File(sourceFilePath);
-
-      // Vérifier si le fichier source existe
-      if (!sourceFile.existsSync()) {
-        return "Le fichier source n'existe pas.";
-      }
-
-      // Créer l'objet Directory pour le répertoire de destination
-      final destinationDir = Directory(destinationDirPath);
-
-      // Vérifier si le répertoire de destination existe, sinon le créer
-      if (!destinationDir.existsSync()) {
-        destinationDir.createSync(recursive: true);
-      }
-
-      // Construire le chemin complet du fichier de destination
-      final fileName = basename(
-          sourceFilePath); // Récupère le nom du fichier depuis le chemin source
-      final destinationFilePath = join(destinationDirPath, fileName);
-
-      // Copier le fichier
-      await sourceFile.copy(destinationFilePath);
-
-      return "Fichier copié avec succès vers $destinationFilePath";
-    } catch (e) {
-      return "Erreur lors de la copie du fichier: $e";
-    }
-  }
-
-  Future<String> deplacer(String sourcePath, String destinationDirPath) async {
-    try {
-      sourcePath = normalize(sourcePath);
-      final entityType = FileSystemEntity.typeSync(sourcePath);
-
-      // Créer l'objet Directory pour le répertoire de destination
-      final destinationDir = Directory(destinationDirPath);
-
-      // Vérifier si le répertoire de destination existe, sinon le créer
-      if (!destinationDir.existsSync()) {
-        destinationDir.createSync(recursive: true);
-      }
-
-      if (entityType == FileSystemEntityType.file) {
-        // Si c'est un fichier
-        final sourceFile = File(sourcePath);
-        final fileName = basename(sourcePath); // Récupère le nom du fichier
-        final destinationFilePath = join(destinationDirPath, fileName);
-
-        // Si un fichier avec le même nom existe déjà à l'emplacement de destination, le supprimer
-        if (File(destinationFilePath).existsSync()) {
-          File(destinationFilePath).deleteSync();
-          print("Fichier existant supprimé: $destinationFilePath");
-        }
-
-        // Copier le fichier
-        await sourceFile.copy(destinationFilePath);
-
-        // Supprimer le fichier source après la copie
-        await sourceFile.delete();
-
-        print("Fichier déplacé avec succès vers $destinationFilePath");
-        return "Fichier déplacé avec succès vers $destinationFilePath";
-      } else if (entityType == FileSystemEntityType.directory) {
-        // Si c'est un dossier
-        print(sourcePath);
-        final sourceDir = Directory(sourcePath);
-        print("sourceDir: $sourceDir");
-        final dirName = basename(sourcePath); // Récupère le nom du dossier
-        print("basename: $dirName");
-        final destinationFolderPath = join(destinationDirPath, dirName);
-        print(
-            "dossier destination pour le deplacement : ${destinationFolderPath}");
-
-        // Si un dossier avec le même nom existe déjà à l'emplacement de destination, le supprimer
-        if (Directory(join(destinationFolderPath, dirName)).existsSync()) {
-          Directory(destinationFolderPath).deleteSync(recursive: true);
-          print("Dossier existant supprimé: $destinationFolderPath");
-        }
-
-        // Renommer le dossier (déplacer)
-        sourceDir.renameSync(destinationFolderPath);
-        //  await copyDirectory(sourceDir,destinationDir);
-
-        print("Dossier déplacé avec succès vers $destinationFolderPath");
-
-        return "Dossier déplacé avec succès vers $destinationFolderPath";
-      } else {
-        return "Le chemin spécifié n'est ni un fichier ni un répertoire.";
-      }
-    } catch (e) {
-      print("Erreur lors du déplacement: $e");
-      return "Erreur lors du déplacement: $e";
-    }
-  }
-
-  copyDirectory(Directory source, Directory destination) =>
-      source.listSync(recursive: false).forEach((var entity) {
-        if (entity is Directory) {
-          var newDirectory =
-              Directory(join(destination.absolute.path, basename(entity.path)));
-          print("Nouveau dossier à créer:  $newDirectory");
-          newDirectory.createSync();
-          copyDirectory(entity.absolute, newDirectory);
-        } else if (entity is File) {
-          entity.copySync(join(destination.path, basename(entity.path)));
-        }
-      });
 
   String ajouterFichier(String filePath) {
     try {
@@ -301,23 +61,23 @@ class Repertoire {
     }
   }
 
-  Stream<FileSystemEvent> surveiller() {
-    final dir = Directory(path);
-    return dir.watch();
-  }
-
   void ecouterEvenements(Repertoire? remoteRepertoire,
       Repertoire? zipRepertoire, Repertoire? localRepertoire) {
     try {
-      final stream = Directory(path).watch();
-      changerStatut(RepertoireStatus.surveille);
+      final directory = Directory(path);
+      final watcher = SubDirectoryWatcher(
+          directory, remoteRepertoire, zipRepertoire, localRepertoire);
+      watcher.watchRecursive();
+
+// Démarrer l'écoute des événements une fois la surveillance en place
+      final stream = directory.watch();
+      _changerStatut(RepertoireStatus.surveille);
 
       stream.listen(
         (FileSystemEvent event) {
           try {
             final sourceRepertoire = this;
             switch (event.runtimeType) {
-              // ignore: type_literal_in_constant_pattern
               case FileSystemCreateEvent:
                 if (sourceRepertoire == remoteRepertoire) {
                   print('Création détectée dans REMOTE, destination: ZIP');
@@ -334,6 +94,7 @@ class Repertoire {
                     remoteRepertoire,
                   );
                 }
+
                 break;
               case FileSystemModifyEvent:
                 if (sourceRepertoire == localRepertoire) {
@@ -345,7 +106,7 @@ class Repertoire {
                   );
                 }
 
-              //   break;
+                break;
               // case FileSystemDeleteEvent:
               //   _traiterSuppression(event as FileSystemDeleteEvent);
               //   break;
@@ -393,26 +154,7 @@ class Repertoire {
           }
         }
       }
-      // } else {
-      //   if (type == "dossier" && name == "ZIP") {
-      //     if (destinationRepertoire != null) {
-      //       await deplacer(event.path, destinationRepertoire.path);
-      //     }
-      //   }
-      // }
     }
-  }
-
-  Directory? trouverParentAvecAscendantLOCALE(String filePath) {
-    Directory currentDir = Directory(filePath);
-    while (currentDir.parent.existsSync()) {
-      final parentDir = currentDir.parent;
-      if (basename(parentDir.path) == "LOCALE") {
-        return currentDir;
-      }
-      currentDir = parentDir;
-    }
-    return null;
   }
 
   Future<void> _traiterModification(FileSystemModifyEvent event,
@@ -451,42 +193,6 @@ class Repertoire {
             } catch (e) {
               print('Erreur lors du traitement du fichier: $e');
             }
-          } else {
-            Directory? parentAvecLocale =
-                trouverParentAvecAscendantLOCALE(event.path);
-            if (parentAvecLocale != null) {
-              print(
-                  "Dossier parent trouvé avec ascendant 'LOCALE': ${parentAvecLocale.path}");
-              if (await estStableDepuisUneMinute(event.path)) {
-                // Nom du fichier ZIP
-                String dirToZipWithZipExtension =
-                    basename(parentAvecLocale.path) + ".zip";
-                String zipDestinationPath =
-                    join(zipRepertoire.path, dirToZipWithZipExtension);
-
-                print(
-                    "Sur le point de zipper le dossier: ${parentAvecLocale.path} vers $zipDestinationPath");
-
-                // Zipper le dossier
-                String zipFilePath =
-                    await zipper(parentAvecLocale.path, zipDestinationPath);
-
-                if (zipFilePath.endsWith('.zip')) {
-                  print(
-                      'Zippage du dossier terminé, fichier créé à: $zipFilePath');
-
-                  // Déplacer le fichier ZIP vers le répertoire de destination
-                  await deplacer(zipFilePath, destinationRepertoire!.path);
-                  print(
-                      "Fichier déplacé avec succès vers ${destinationRepertoire.path}");
-                } else {
-                  print('Erreur lors du zippage: $zipFilePath');
-                }
-              } else {
-                print(
-                    'Le fichier a été modifié pendant l\'attente. Processus de zip avorté');
-              }
-            }
           }
         } else {
           print("Le fichier ZIP n'existe pas: ${event.path}");
@@ -514,5 +220,9 @@ class Repertoire {
     String fileNameWithoutExtension = basenameWithoutExtension(path);
     String zipFileName = '$fileNameWithoutExtension.zip';
     return zipFileName;
+  }
+
+  bool _isWithinLocale(String filePath) {
+    return filePath.contains('LOCALE');
   }
 }

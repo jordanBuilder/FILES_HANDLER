@@ -41,7 +41,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
        Repertoire remoteRepertoire = Dossier(path: remotePath);
-
       Repertoire zipRepertoire = Dossier(path: zipPath);
       Repertoire localRepertoire = Dossier(path: localePath);
 

@@ -1,0 +1,116 @@
+// ignore_for_file: avoid_print
+
+import 'dart:collection';
+import 'dart:io';
+import 'dart:async';
+import 'package:files_handler/utils/deplacer.dart';
+import 'package:files_handler/utils/zipper.dart';
+import 'package:path/path.dart';
+import 'package:archive/archive_io.dart';
+
+import 'package:files_handler/models/repertoire.dart';
+import 'package:files_handler/utils/findParentWithLocaleAscendant.dart';
+import 'package:files_handler/utils/isStableSinceOneMinute.dart';
+
+class SubDirectoryWatcher {
+  final Directory directory;
+  final List<StreamSubscription<FileSystemEvent>> _subscriptions = [];
+  final Repertoire? remoteRepertoire;
+  final Repertoire? zipRepertoire;
+  final Repertoire? localRepertoire;
+
+  SubDirectoryWatcher(this.directory, this.remoteRepertoire, this.zipRepertoire,
+      this.localRepertoire);
+
+  // Fonction récursive pour surveiller un répertoire et ses sous-répertoires
+  void watchRecursive() {
+    // Surveiller le répertoire actuel
+    _watchSubDirectory(directory);
+
+    // Parcourir les sous-répertoires de manière récursive
+    directory.list(recursive: true).listen((FileSystemEntity entity) {
+      if (entity is Directory) {
+        _watchSubDirectory(entity);
+      }
+    });
+  }
+
+  // Fonction pour surveiller un répertoire spécifique
+  void _watchSubDirectory(Directory dir) {
+    try {
+      final subscription = dir.watch().listen(
+        (event) async {
+          switch (event.type) {
+            case FileSystemEvent.create:
+              print('Création détectée dans ${event.path}');
+              break;
+            case FileSystemEvent.modify:
+              print('Modification détectée dans ${event.path}');
+              if (event.path.contains("LOCALE")) {
+                Directory? parentAvecLocale =
+                    trouverParentAvecAscendantLOCALE(event.path);
+                if (parentAvecLocale != null) {
+                  print(
+                      "Dossier parent trouvé avec ascendant 'LOCALE': ${parentAvecLocale.path}");
+                  if (await estStableDepuisUneMinute(event.path)) {
+                    // Nom du fichier ZIP
+                    String dirToZipWithZipExtension =
+                        "${basename(parentAvecLocale.path)}.zip";
+                    String zipDestinationPath =
+                        join(zipRepertoire!.path, dirToZipWithZipExtension);
+
+                    print(
+                        "Sur le point de zipper le dossier: ${parentAvecLocale.path} vers $zipDestinationPath");
+
+                    // Zipper le dossier
+                    String zipFilePath =
+                        await zipper(parentAvecLocale.path, zipDestinationPath);
+
+                    if (zipFilePath.endsWith('.zip')) {
+                      print(
+                          'Zippage du dossier terminé, fichier créé à: $zipFilePath');
+
+                      // Déplacer le fichier ZIP vers le répertoire de destination
+                      await deplacer(zipFilePath, zipRepertoire!.path);
+                      print(
+                          "Fichier déplacé avec succès vers ${zipRepertoire!.path}");
+                    } else {
+                      print('Erreur lors du zippage: $zipFilePath');
+                    }
+                  } else {
+                    print(
+                        'Le fichier a été modifié pendant l\'attente. Processus de zip avorté');
+                  }
+                }
+              }
+
+              break;
+            case FileSystemEvent.delete:
+              print('Suppression détectée dans ${event.path}');
+              break;
+            case FileSystemEvent.move:
+              print('Déplacement détecté dans ${event.path}');
+              break;
+          }
+        },
+        onError: (error) {
+          print('Erreur dans la surveillance de $dir: $error');
+        },
+      );
+
+      // Ajouter la souscription à la liste pour pouvoir l'annuler si nécessaire
+      _subscriptions.add(subscription);
+    } catch (e) {
+      print('Erreur lors de la surveillance de $dir: $e');
+    }
+  }
+
+  // Fonction pour annuler toutes les souscriptions de surveillance
+  void cancelAll() {
+    for (var subscription in _subscriptions) {
+      subscription.cancel();
+    }
+    _subscriptions.clear();
+    print('Surveillance annulée pour tous les répertoires.');
+  }
+}
