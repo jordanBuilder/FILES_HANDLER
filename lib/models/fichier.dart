@@ -4,7 +4,7 @@ import 'repertoire.dart';
 class Fichier extends Repertoire {
   Fichier({
     required String path,
-    List<String> permissions = const [], // Par défaut, liste vide
+    List<RepertoirePermissions> permissions = const [], // Par défaut, liste vide
   }) : super(path: path) {
     this.permissions = permissions;
     initializeProperties(); // Initialise les propriétés héritées

@@ -13,20 +13,33 @@ enum RepertoireStatus {
   nonSurveille,
 }
 
+enum RepertoirePermissions {
+  readable('readable'),
+  unreadable('unreadable'),
+  writable('writable'),
+  unwritable('unwritable');
+
+  final String description;
+
+  const RepertoirePermissions(this.description);
+
+  String get value => description;
+}
+
 class Repertoire {
   late String name;
   late String path;
-  late int size;
+  late Map<String, int> size;
   late RepertoireStatus status;
   late String type;
-  List<String> permissions = [];
+  late List<RepertoirePermissions> permissions = [];
 
   Repertoire({required this.path}) {
     status = RepertoireStatus.nonSurveille;
     initializeProperties();
   }
 
-  void initializeProperties() {
+  void initializeProperties() async {
     final fileStat = FileStat.statSync(path);
 
     // Déterminer si le chemin pointe vers un fichier ou un répertoire
@@ -39,8 +52,100 @@ class Repertoire {
     } else {
       type = 'inconnu'; // Si le type est inconnu ou le fichier n'existe pas
     }
+    size = await _getDirectorySize(path);
 
-    size = fileStat.size;
+    verifierPermissions(path);
+  }
+
+  Future<Map<String, int>> _getDirectorySize(String dirPath) async {
+    int fileNum = 0;
+    int directoryNum = 0;
+    int totalSize = 0;
+    var dir = Directory(dirPath);
+    try {
+      if (dir.existsSync()) {
+        dir
+            .listSync(recursive: false, followLinks: false)
+            .forEach((FileSystemEntity entity) {
+          if (entity is File) {
+            fileNum++;
+            totalSize += entity.lengthSync();
+          } else if (entity is Directory) {
+            directoryNum++;
+          }
+        });
+      }
+    } catch (e) {
+      print(e.toString());
+    }
+    return {
+      "DirectoryNum": directoryNum,
+      "fileNum": fileNum,
+      "totalSize": totalSize
+    };
+  }
+
+  void verifierPermissions(String path) {
+    final entity = FileSystemEntity.typeSync(path);
+
+    if (entity == FileSystemEntityType.notFound) {
+      print("Le Chemin spécifié n'existe pas !");
+      return;
+    }
+
+    if (entity == FileSystemEntityType.file) {
+      final file = File(path);
+
+      try {
+        file.readAsBytesSync();
+        ajouterPermissions(RepertoirePermissions.readable);
+      } catch (e) {
+        print("Le fichier n'est pas lisible : $e");
+        ajouterPermissions(RepertoirePermissions.unreadable);
+      }
+
+      try {
+        file.writeAsStringSync(" ");
+        ajouterPermissions(RepertoirePermissions.writable);
+      } catch (e) {
+        print("Le fichier n'est pas écrivable: $e");
+        ajouterPermissions(RepertoirePermissions.unwritable);
+      }
+    } else if (entity == FileSystemEntityType.directory) {
+      final directory = Directory(path);
+      try {
+        directory.listSync();
+        ajouterPermissions(RepertoirePermissions.readable);
+      } catch (e) {
+        print("Le dossier n'est pas accessible: $e");
+        ajouterPermissions(RepertoirePermissions.unreadable);
+      }
+
+      try {
+        final testFile = File('${directory.path}/test_permissions.txt');
+        testFile.writeAsStringSync('Test');
+        ajouterPermissions(RepertoirePermissions.writable);
+        testFile.deleteSync();
+      } catch (e) {
+        print("Le dossier n'est pas écrivable");
+        ajouterPermissions(RepertoirePermissions.unwritable);
+      }
+    } else {
+      print("Le chemin spécifié n'est ni un fichier ni un repertoire");
+    }
+  }
+
+  bool hasReadableAndWritable(List<RepertoirePermissions> permissions) {
+    return this.permissions.contains(RepertoirePermissions.readable) &&
+        this.permissions.contains(RepertoirePermissions.writable);
+  }
+
+  bool hasReadable(List<RepertoirePermissions> permissions) {
+    return this.permissions.contains(RepertoirePermissions.readable);
+  }
+
+  bool hasWritable(List<RepertoirePermissions> permissions) {
+    return this.permissions.contains(RepertoirePermissions.writable);
   }
 
   void _changerStatut(RepertoireStatus nouveauStatut) {
@@ -61,6 +166,12 @@ class Repertoire {
     }
   }
 
+  void ajouterPermissions(RepertoirePermissions permission) {
+    permissions =
+        List.from(permissions); // S'assurer que la liste est modifiable
+    permissions.add(permission);
+  }
+
   void ecouterEvenements(Repertoire? remoteRepertoire,
       Repertoire? zipRepertoire, Repertoire? localRepertoire) {
     try {
@@ -79,45 +190,58 @@ class Repertoire {
             final sourceRepertoire = this;
             switch (event.runtimeType) {
               case FileSystemCreateEvent:
-                if (sourceRepertoire == remoteRepertoire) {
-                  print('Création détectée dans REMOTE, destination: ZIP');
-                  _traiterCreation(
-                    event as FileSystemCreateEvent,
-                    zipRepertoire, // ZIP comme destination
-                    localRepertoire,
-                  );
-                } else if (sourceRepertoire == localRepertoire) {
-                  print('Création détectée dans LOCALE, destination: ZIP');
-                  _traiterCreation(
-                    event as FileSystemCreateEvent,
-                    zipRepertoire, // ZIP comme destination
-                    remoteRepertoire,
-                  );
+                if (hasWritable(permissions)) {
+                  if (sourceRepertoire == remoteRepertoire) {
+                    print('Création détectée dans REMOTE, destination: ZIP');
+                    _traiterCreation(
+                      event as FileSystemCreateEvent,
+                      zipRepertoire, // ZIP comme destination
+                      localRepertoire,
+                    );
+                  } else if (sourceRepertoire == localRepertoire) {
+                    print(
+                        '*******Création détectée dans LOCALE*********************');
+                    _traiterCreation(
+                      event as FileSystemCreateEvent,
+                      zipRepertoire, // ZIP comme destination
+                      remoteRepertoire,
+                    );
+                  }
                 }
 
                 break;
               case FileSystemModifyEvent:
-                if (sourceRepertoire == localRepertoire) {
-                  print('Modification détéctée dans LOCALE, destination: ZIP');
-                  _traiterModification(
-                    event as FileSystemModifyEvent,
-                    zipRepertoire, // ZIP comme destination
-                    remoteRepertoire,
-                  );
-                }
+                if (hasWritable(permissions)) {
+                  if (sourceRepertoire == localRepertoire) {
+                    print(
+                        "Modification d'un fichier enfant direct, détéctée dans LOCALE, destination: ZIP");
+                    _traiterModification(
+                      event as FileSystemModifyEvent,
+                      zipRepertoire, // ZIP comme destination
+                      remoteRepertoire,
+                    );
+                  }
 
-                if (sourceRepertoire == remoteRepertoire) {
-                  print('Modification détéctée dans REMOTE, destination: ZIP');
-                  _traiterModification(
-                    event as FileSystemModifyEvent,
-                    zipRepertoire, // ZIP comme destination
-                    localRepertoire,
-                  );
+                  if (sourceRepertoire == remoteRepertoire) {
+                    print('Modification détéctée dans REMOTE');
+                    _traiterModification(
+                      event as FileSystemModifyEvent,
+                      zipRepertoire, // ZIP comme destination
+                      localRepertoire,
+                    );
+                  }
                 }
                 break;
-                
+
               case FileSystemDeleteEvent:
-                _traiterSuppression(event as FileSystemDeleteEvent);
+                if (hasWritable(permissions)) {
+                  _traiterSuppression(event as FileSystemDeleteEvent);
+                }
+                break;
+              case FileSystemMoveEvent:
+                if (hasWritable(permissions)) {
+                  _traiterMove(event as FileSystemMoveEvent);
+                }
                 break;
               default:
                 // Gérer d'autres types d'événements si nécessaire
@@ -214,13 +338,7 @@ class Repertoire {
     // Ajouter une logique pour gérer les fichiers supprimés
   }
 
-  String ajouterPermissions(String permission) {
-    permissions.add(permission);
-    return "Permission " + permission + "ajouté";
-  }
-
-  Future<void> _traiterMove(FileSystemMoveEvent event,
-      Repertoire? zipRepertoire, Repertoire? destinationRepertoire) async {
+  Future<void> _traiterMove(FileSystemMoveEvent event) async {
     print('Déplacement détecté: ${event.path}');
   }
 

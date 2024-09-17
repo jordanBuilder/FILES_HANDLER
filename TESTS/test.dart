@@ -3,27 +3,35 @@
 import 'package:files_handler/models/fichier.dart';
 
 void main() async {
-  //   Fichier fichierTest = Fichier(
-  //   name: 'test.txt',
-  //   path: 'C:\\Users\\Lenovo\\Desktop\\test.txt', // Assurez-vous que ce fichier existe
-  //   size: 1024,
-  //   permissions: ['read', 'write'],
-  // );
+  Status statut = Status.actif;
 
-  // String result = fichierTest.zipper('C:\\Users\\Lenovo\\Desktop\\test.zip');
-  // print(result);
+  print('Le statut est : ${statut.value}'); // Output: Le statut est : Actif
 
-  Fichier fichierTest = Fichier(
-    path:
-        'C:\\Users\\Lenovo\\Desktop\\test.zip', // Assurez-vous que ce fichier existe
-  );
+  // Exemple de switch sur l'énumération
+  switch (statut) {
+    case Status.actif:
+      print('Le statut est actif.');
+      break;
+    case Status.inactif:
+      print('Le statut est inactif.');
+      break;
+    case Status.suspendu:
+      print('Le statut est suspendu.');
+      break;
+  }
+}
 
-  // String result = fichierTest.dezipper('C:\\Users\\Lenovo\\Desktop\\test.zip','C:\\Users\\Lenovo\\Desktop\\extracted');
+enum Status {
+  actif('Actif'),
+  inactif('Inactif'),
+  suspendu('Suspendu');
 
-  // print(result);
+  // Propriété pour stocker la chaîne de caractères
+  final String description;
 
-  // String result = fichierTest.copier(fichierTest.path,'C:\\Users\\Lenovo\\Documents\\CopiedFiles');
+  // Constructeur pour assigner la chaîne
+  const Status(this.description);
 
-  // print(result);
-  // String result = fichierTest.deplacer(fichierTest.path,'C:\\Users\\Lenovo\\CuttedFiles');
+  // Optionnel : méthode pour récupérer la chaîne associée
+  String get value => description;
 }

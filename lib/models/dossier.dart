@@ -12,7 +12,7 @@ class Dossier extends Repertoire {
 
   Dossier({
     required String path,
-    List<String> permissions =
+    List<RepertoirePermissions> permissions =
         const [], // Valeur par défaut pour les permissions
     this.nombreDeFichiers = 0,
   }) : super(path: path) {
