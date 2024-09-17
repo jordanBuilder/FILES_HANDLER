@@ -1,8 +1,5 @@
-import 'dart:collection';
 import 'dart:io';
 import 'dart:async';
-import 'package:path/path.dart';
-import 'package:archive/archive_io.dart';
 
 
 Future<DateTime> obtenirDateDerniereModification(String filePath) async {

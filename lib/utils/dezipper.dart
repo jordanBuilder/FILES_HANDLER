@@ -1,8 +1,5 @@
-import 'dart:collection';
 import 'dart:io';
 import 'dart:async';
-import 'package:files_handler/utils/deplacer.dart';
-import 'package:files_handler/utils/zipper.dart';
 import 'package:path/path.dart';
 import 'package:archive/archive_io.dart';
 

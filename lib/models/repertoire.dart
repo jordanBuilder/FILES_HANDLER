@@ -106,10 +106,19 @@ class Repertoire {
                   );
                 }
 
+                if (sourceRepertoire == remoteRepertoire) {
+                  print('Modification détéctée dans REMOTE, destination: ZIP');
+                  _traiterModification(
+                    event as FileSystemModifyEvent,
+                    zipRepertoire, // ZIP comme destination
+                    localRepertoire,
+                  );
+                }
                 break;
-              // case FileSystemDeleteEvent:
-              //   _traiterSuppression(event as FileSystemDeleteEvent);
-              //   break;
+                
+              case FileSystemDeleteEvent:
+                _traiterSuppression(event as FileSystemDeleteEvent);
+                break;
               default:
                 // Gérer d'autres types d'événements si nécessaire
                 print('Événement non géré: ${event.runtimeType}');
@@ -148,7 +157,6 @@ class Repertoire {
               await deplacer(repertoire_path, destinationRepertoire.path);
             }
           } else {
-            // ignore: avoid_print
             print(
                 "Le fichier ZIP n'existe pas ou est en cours d'écriture : ${event.path}");
           }

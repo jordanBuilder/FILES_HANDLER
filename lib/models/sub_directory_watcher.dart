@@ -1,12 +1,10 @@
 // ignore_for_file: avoid_print
 
-import 'dart:collection';
 import 'dart:io';
 import 'dart:async';
 import 'package:files_handler/utils/deplacer.dart';
 import 'package:files_handler/utils/zipper.dart';
 import 'package:path/path.dart';
-import 'package:archive/archive_io.dart';
 
 import 'package:files_handler/models/repertoire.dart';
 import 'package:files_handler/utils/findParentWithLocaleAscendant.dart';
@@ -45,41 +43,43 @@ class SubDirectoryWatcher {
               print('Création détectée dans ${event.path}');
               break;
             case FileSystemEvent.modify:
-              print('Modification détectée dans ${event.path}');
-              if (event.path.contains("LOCALE")) {
-                Directory? parentAvecLocale =
-                    trouverParentAvecAscendantLOCALE(event.path);
-                if (parentAvecLocale != null) {
-                  print(
-                      "Dossier parent trouvé avec ascendant 'LOCALE': ${parentAvecLocale.path}");
-                  if (await estStableDepuisUneMinute(event.path)) {
-                    // Nom du fichier ZIP
-                    String dirToZipWithZipExtension =
-                        "${basename(parentAvecLocale.path)}.zip";
-                    String zipDestinationPath =
-                        join(zipRepertoire!.path, dirToZipWithZipExtension);
+              final entity = FileSystemEntity.typeSync(event.path);
 
+              if (entity == FileSystemEntityType.directory) {
+                print('Modification détectée dans ${event.path}');
+                if (event.path.contains("LOCALE")) {
+                  Directory? parentAvecLocale =
+                      trouverParentAvecAscendantLOCALE(event.path);
+                  if (parentAvecLocale != null) {
                     print(
-                        "Sur le point de zipper le dossier: ${parentAvecLocale.path} vers $zipDestinationPath");
+                        "Dossier parent trouvé avec ascendant 'LOCALE': ${parentAvecLocale.path}");
+                    if (await estStableDepuisUneMinute(event.path)) {
+                      // Nom du fichier ZIP
+                      String dirToZipWithZipExtension =
+                          "${basename(parentAvecLocale.path)}.zip";
+                      String zipDestinationPath =
+                          join(zipRepertoire!.path, dirToZipWithZipExtension);
 
-                    // Zipper le dossier
-                    String zipFilePath =
-                        await zipper(parentAvecLocale.path, zipDestinationPath);
-
-                    if (zipFilePath.endsWith('.zip')) {
                       print(
-                          'Zippage du dossier terminé, fichier créé à: $zipFilePath');
+                          "Sur le point de zipper le dossier: ${parentAvecLocale.path} vers $zipDestinationPath");
 
-                      // Déplacer le fichier ZIP vers le répertoire de destination
-                      await deplacer(zipFilePath, zipRepertoire!.path);
-                      print(
-                          "Fichier déplacé avec succès vers ${zipRepertoire!.path}");
+                      // Zipper le dossier
+                      String zipFilePath = await zipper(
+                          parentAvecLocale.path, zipDestinationPath);
+
+                      if (zipFilePath.endsWith('.zip')) {
+                        print(
+                            'Zippage du dossier terminé, dossier créé à: $zipFilePath');
+
+                        // Déplacer le fichier ZIP vers le répertoire de destination
+                        await deplacer(zipFilePath, remoteRepertoire!.path);
+                      } else {
+                        print('Erreur lors du zippage: $zipFilePath');
+                      }
                     } else {
-                      print('Erreur lors du zippage: $zipFilePath');
+                      print(
+                          'Le fichier a été modifié pendant l\'attente. Processus de zip avorté');
                     }
-                  } else {
-                    print(
-                        'Le fichier a été modifié pendant l\'attente. Processus de zip avorté');
                   }
                 }
               }
