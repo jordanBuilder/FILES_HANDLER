@@ -172,8 +172,11 @@ class Repertoire {
     permissions.add(permission);
   }
 
-  void ecouterEvenements(Repertoire? remoteRepertoire,
-      Repertoire? zipRepertoire, Repertoire? localRepertoire) {
+  void ecouterEvenements(
+      Repertoire? remoteRepertoire,
+      Repertoire? zipRepertoire,
+      Repertoire? localRepertoire,
+      StreamController<String> eventStreamController) {
     try {
       final directory = Directory(path);
       final watcher = SubDirectoryWatcher(
@@ -188,19 +191,21 @@ class Repertoire {
         (FileSystemEvent event) {
           try {
             final sourceRepertoire = this;
+            String eventDescription = "";
             switch (event.runtimeType) {
               case FileSystemCreateEvent:
                 if (hasWritable(permissions)) {
                   if (sourceRepertoire == remoteRepertoire) {
-                    print('Création détectée dans REMOTE, destination: ZIP');
+                    eventDescription = 'Création détectée dans REMOTE: ${event.path}';
+                    eventStreamController.add(eventDescription);
                     _traiterCreation(
                       event as FileSystemCreateEvent,
                       zipRepertoire, // ZIP comme destination
                       localRepertoire,
                     );
                   } else if (sourceRepertoire == localRepertoire) {
-                    print(
-                        '*******Création détectée dans LOCALE*********************');
+                    eventDescription = 'Création détectée dans LOCALE: ${event.path}';
+
                     _traiterCreation(
                       event as FileSystemCreateEvent,
                       zipRepertoire, // ZIP comme destination
@@ -213,8 +218,8 @@ class Repertoire {
               case FileSystemModifyEvent:
                 if (hasWritable(permissions)) {
                   if (sourceRepertoire == localRepertoire) {
-                    print(
-                        "Modification d'un fichier enfant direct, détéctée dans LOCALE, destination: ZIP");
+                    eventDescription = "Modification détectée dans LOCALE: ${event.path}";
+
                     _traiterModification(
                       event as FileSystemModifyEvent,
                       zipRepertoire, // ZIP comme destination
@@ -223,7 +228,7 @@ class Repertoire {
                   }
 
                   if (sourceRepertoire == remoteRepertoire) {
-                    print('Modification détéctée dans REMOTE');
+                    eventDescription = 'Modification détectée dans REMOTE ${event.path}';
                     _traiterModification(
                       event as FileSystemModifyEvent,
                       zipRepertoire, // ZIP comme destination
@@ -235,19 +240,25 @@ class Repertoire {
 
               case FileSystemDeleteEvent:
                 if (hasWritable(permissions)) {
-                  _traiterSuppression(event as FileSystemDeleteEvent);
+                  eventDescription = 'Suppression détectée dans REMOTE : ${event.path}';
+                  _traiterSuppression(
+                      event as FileSystemDeleteEvent, localRepertoire);
                 }
                 break;
               case FileSystemMoveEvent:
                 if (hasWritable(permissions)) {
+                  eventDescription = 'Déplacement détecté: ${event.path}';
                   _traiterMove(event as FileSystemMoveEvent);
                 }
                 break;
               default:
                 // Gérer d'autres types d'événements si nécessaire
+                eventDescription = 'Événement non géré: ${event.runtimeType}';
                 print('Événement non géré: ${event.runtimeType}');
                 break;
             }
+
+            eventStreamController.add(eventDescription);
           } catch (e) {
             // Gérer les erreurs spécifiques aux opérations d'événements
             print('Erreur lors du traitement de l\'événement: $e');
@@ -333,9 +344,11 @@ class Repertoire {
     }
   }
 
-  void _traiterSuppression(FileSystemDeleteEvent event) {
-    print('Suppression détectée: ${event.path}');
-    // Ajouter une logique pour gérer les fichiers supprimés
+  void _traiterSuppression(FileSystemDeleteEvent event, final localRepertoire) {
+    print("Suppression d'un repertoire direct détectée: ${event.path}");
+    if (type == "dossier" && name == "REMOTE") {
+      _deleteFromLocalDirectory(event.path, localRepertoire);
+    }
   }
 
   Future<void> _traiterMove(FileSystemMoveEvent event) async {
@@ -350,5 +363,43 @@ class Repertoire {
 
   bool _isWithinLocale(String filePath) {
     return filePath.contains('LOCALE');
+  }
+
+  void _deleteFromLocalDirectory(String path, final localRepertoire) async {
+    try {
+      final dir = Directory(localRepertoire.path);
+      final List<FileSystemEntity> entities = await dir.list().toList();
+
+      final eventBaseName = getBaseName(path);
+
+      for (var entity in entities) {
+        final entityBaseName = getBaseName(entity.path);
+        if (entityBaseName == eventBaseName) {
+          if (entity is File) {
+            try {
+              await entity.delete();
+              print("Fichier supprimé : $path");
+            } catch (e) {
+              print("Erreur lors de la suppression du fichier: $e");
+            }
+          } else if (entity is Directory) {
+            try {
+              await entity.delete(recursive: true);
+              print("Dossier supprimé: $path");
+            } catch (e) {
+              print("Erreur lors de la suppression du dossier! $e");
+            }
+          }
+        }
+      }
+    } catch (e) {
+      print(
+          "Erreur lors de la recherche du repertoire effacé, dans LocalRepertoire! $e");
+    }
+  }
+
+  String getBaseName(String path) {
+    final fileName = path.split(Platform.pathSeparator).last;
+    return fileName.split('.').first;
   }
 }
