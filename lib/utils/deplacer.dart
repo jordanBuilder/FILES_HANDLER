@@ -27,7 +27,7 @@ Future<String> deplacer(String sourcePath, String destinationDirPath) async {
       // Si un fichier avec le même nom existe déjà à l'emplacement de destination, le supprimer
       if (File(destinationFilePath).existsSync()) {
         File(destinationFilePath).deleteSync();
-        print("Fichier existant supprimé: $destinationFilePath");
+        print("Fichier existant à supprimer: $destinationFilePath");
       }
 
       // Copier le fichier

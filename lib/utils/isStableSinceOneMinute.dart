@@ -6,7 +6,7 @@ import 'obtainLastModified.dart';
 
 Future<bool> estStableDepuisUneMinute(String filePath) async {
     final file = File(filePath);
-    const Duration attente = Duration(seconds: 18);
+    const Duration attente = Duration(seconds: 10);
 
     try {
       // Vérifie si le fichier existe

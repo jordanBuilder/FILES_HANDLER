@@ -242,7 +242,7 @@ class Repertoire {
                 if (hasWritable(permissions)) {
                   eventDescription = 'Suppression détectée dans REMOTE : ${event.path}';
                   _traiterSuppression(
-                      event as FileSystemDeleteEvent, localRepertoire);
+                      event as FileSystemDeleteEvent,remoteRepertoire,localRepertoire);
                 }
                 break;
               case FileSystemMoveEvent:
@@ -302,7 +302,6 @@ class Repertoire {
 
   Future<void> _traiterModification(FileSystemModifyEvent event,
       Repertoire? zipRepertoire, Repertoire? destinationRepertoire) async {
-    print('Modification détectée: ${event.path}');
     if (type == "dossier" && name == "LOCALE") {
       if (zipRepertoire != null) {
         final file = File(event.path);
@@ -338,16 +337,16 @@ class Repertoire {
             }
           }
         } else {
-          print("Le fichier ZIP n'existe pas: ${event.path}");
+          print("Le fichier ZIP n'existe pas: ${event.path} ou est en cours de copie");
         }
       }
     }
   }
 
-  void _traiterSuppression(FileSystemDeleteEvent event, final localRepertoire) {
+  void _traiterSuppression(FileSystemDeleteEvent event, final remoteRepertoire,final localRepertoire) {
     print("Suppression d'un repertoire direct détectée: ${event.path}");
     if (type == "dossier" && name == "REMOTE") {
-      _deleteFromLocalDirectory(event.path, localRepertoire);
+      _deleteFromLocalDirectory(event.path, remoteRepertoire,localRepertoire);
     }
   }
 
@@ -365,20 +364,22 @@ class Repertoire {
     return filePath.contains('LOCALE');
   }
 
-  void _deleteFromLocalDirectory(String path, final localRepertoire) async {
+  void _deleteFromLocalDirectory(String path, final remoteRepertoire,final localRepertoire) async {
     try {
-      final dir = Directory(localRepertoire.path);
-      final List<FileSystemEntity> entities = await dir.list().toList();
+      final localDir = Directory(localRepertoire.path);
+      final remoteDir = Directory(remoteRepertoire.path);
+      final List<FileSystemEntity> entities = await localDir.list().toList();
 
       final eventBaseName = getBaseName(path);
 
       for (var entity in entities) {
         final entityBaseName = getBaseName(entity.path);
-        if (entityBaseName == eventBaseName) {
+       final findedInRemote = await findPathInDirectory(remoteDir,path);
+        if ((entityBaseName == eventBaseName) && !findedInRemote) {
           if (entity is File) {
             try {
               await entity.delete();
-              print("Fichier supprimé : $path");
+              print("Fichier supprimée : ${entity.path}");
             } catch (e) {
               print("Erreur lors de la suppression du fichier: $e");
             }
@@ -401,5 +402,21 @@ class Repertoire {
   String getBaseName(String path) {
     final fileName = path.split(Platform.pathSeparator).last;
     return fileName.split('.').first;
+  
   }
+  Future<bool> findPathInDirectory(Directory directory, String pathToFind) async {
+  try {
+    await for (var entity in directory.list(recursive: true)) {
+      if (entity.path == pathToFind) {
+      print('Trouvé: $pathToFind');
+        return true;
+      }
+    }
+  } catch (e) {
+    print('Erreur: $e');
+  }
+  print('Non trouvé: $pathToFind');  
+  return false;
+}
+
 }
