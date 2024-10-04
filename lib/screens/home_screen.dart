@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'details_page.dart';
 import '../models/repertoire.dart';
 import '../models/dossier.dart';
@@ -20,6 +21,13 @@ class _HomeScreenState extends State<HomeScreen> {
   final _zipPathController = TextEditingController();
   final _localePathController = TextEditingController();
 
+  Future<void> _savePaths(String remotePath, String zipPath, String localePath) async{
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('remotePath',remotePath);
+    await prefs.setString('zipPath',zipPath);
+    await prefs.setString('localePath',localePath);
+  }
+  
 //Fonction de validation des chemins
 
   String? _validatePath(String? value) {
