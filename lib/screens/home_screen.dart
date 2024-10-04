@@ -4,9 +4,8 @@ import 'details_page.dart';
 import '../models/repertoire.dart';
 import '../models/dossier.dart';
 
-
-final _windowsPathRegex = RegExp(r'^[a-zA-Z]:\\[^<>:"/\\|?*\n\r]+(\\[^<>:"/\\|?*\n\r]+)*\\?$');
-
+final _windowsPathRegex =
+    RegExp(r'^[a-zA-Z]:\\[^<>:"/\\|?*\n\r]+(\\[^<>:"/\\|?*\n\r]+)*\\?$');
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -21,13 +20,14 @@ class _HomeScreenState extends State<HomeScreen> {
   final _zipPathController = TextEditingController();
   final _localePathController = TextEditingController();
 
-  Future<void> _savePaths(String remotePath, String zipPath, String localePath) async{
+  Future<void> _savePaths(
+      String remotePath, String zipPath, String localePath) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('remotePath',remotePath);
-    await prefs.setString('zipPath',zipPath);
-    await prefs.setString('localePath',localePath);
+    await prefs.setString('remotePath', remotePath);
+    await prefs.setString('zipPath', zipPath);
+    await prefs.setString('localePath', localePath);
   }
-  
+
 //Fonction de validation des chemins
 
   String? _validatePath(String? value) {
@@ -47,8 +47,9 @@ class _HomeScreenState extends State<HomeScreen> {
       final zipPath = _zipPathController.text;
       final localePath = _localePathController.text;
 
+      _savePaths(remotePath, zipPath, localePath);
 
-       Repertoire remoteRepertoire = Dossier(path: remotePath);
+      Repertoire remoteRepertoire = Dossier(path: remotePath);
       Repertoire zipRepertoire = Dossier(path: zipPath);
       Repertoire localRepertoire = Dossier(path: localePath);
 
@@ -91,10 +92,9 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
- backgroundColor: Color(0xFFFEC868),
+      backgroundColor: Color(0xFFFEC868),
       body: Center(
-        child: 
-        Row(
+        child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Expanded(
@@ -110,13 +110,12 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             Expanded(
               flex: 5,
-              child: 
-              Padding(
+              child: Padding(
                 padding: const EdgeInsets.all(18.0),
                 child: Container(
                   decoration: BoxDecoration(
-                     borderRadius: BorderRadius.all(Radius.circular(25)),
-                     color: Colors.white,
+                    borderRadius: BorderRadius.all(Radius.circular(25)),
+                    color: Colors.white,
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(88.0),
@@ -126,11 +125,15 @@ class _HomeScreenState extends State<HomeScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
                           const Text(
-                                  'FILES HANDLER',style: TextStyle(fontWeight: FontWeight.bold, fontSize: 34, color: Color(0xFF008631)),
-                                ),
-                                SizedBox(
-                                  height: 30,
-                                ),
+                            'FILES HANDLER',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 34,
+                                color: Color(0xFF008631)),
+                          ),
+                          SizedBox(
+                            height: 30,
+                          ),
                           TextFormField(
                             controller: _remotePathController,
                             decoration: const InputDecoration(
@@ -138,9 +141,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                 enabledBorder: OutlineInputBorder(
                                     borderSide:
                                         BorderSide(color: Colors.black)),
-                                icon: Icon(Icons.folder, color: Colors.red, size: 34,),
+                                icon: Icon(
+                                  Icons.folder,
+                                  color: Colors.red,
+                                  size: 34,
+                                ),
                                 focusedBorder: OutlineInputBorder(
-                                    borderSide: BorderSide(color: Color(0xFF008631)))),
+                                    borderSide:
+                                        BorderSide(color: Color(0xFF008631)))),
                             validator: _validatePath,
                           ),
                           SizedBox(
@@ -153,9 +161,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                 enabledBorder: OutlineInputBorder(
                                     borderSide:
                                         BorderSide(color: Colors.black)),
-                                icon: Icon(Icons.folder_zip_rounded, color: Colors.red, size:34),
+                                icon: Icon(Icons.folder_zip_rounded,
+                                    color: Colors.red, size: 34),
                                 focusedBorder: OutlineInputBorder(
-                                    borderSide: BorderSide(color: Color(0xFF008631)))),
+                                    borderSide:
+                                        BorderSide(color: Color(0xFF008631)))),
                             validator: _validatePath,
                           ),
                           SizedBox(
@@ -166,11 +176,15 @@ class _HomeScreenState extends State<HomeScreen> {
                             decoration: const InputDecoration(
                               labelText: 'LOCALE Path',
                               enabledBorder: OutlineInputBorder(
-                                  borderSide:
-                                      BorderSide(color: Colors.black)),
-                              icon: Icon(Icons.folder, color: Colors.red, size: 34,),
+                                  borderSide: BorderSide(color: Colors.black)),
+                              icon: Icon(
+                                Icons.folder,
+                                color: Colors.red,
+                                size: 34,
+                              ),
                               focusedBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(color: Color(0xFF008631))),
+                                  borderSide:
+                                      BorderSide(color: Color(0xFF008631))),
                             ),
                             validator: _validatePath,
                           ),
