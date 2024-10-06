@@ -46,8 +46,7 @@ class _DetailsPageState extends State<DetailsPage> {
     widget.remoteRepertoire.ecouterEvenements(widget.remoteRepertoire,
         widget.zipRepertoire, widget.localRepertoire, _eventStreamController!);
 
-    widget.localRepertoire.ecouterEvenements(widget.remoteRepertoire,
-        widget.zipRepertoire, widget.localRepertoire, _eventStreamController!);
+    
   }
 
   @override

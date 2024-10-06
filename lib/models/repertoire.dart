@@ -177,111 +177,131 @@ class Repertoire {
       Repertoire? zipRepertoire,
       Repertoire? localRepertoire,
       StreamController<String> eventStreamController) {
-    try {
-      final directory = Directory(path);
-      final watcher = SubDirectoryWatcher(
-          directory, remoteRepertoire, zipRepertoire, localRepertoire);
-      watcher.watchRecursive();
+    final watcher =
+        SubDirectoryWatcher(remoteRepertoire, zipRepertoire, localRepertoire);
+    watcher.watchRecursive();
 
-// Démarrer l'écoute des événements une fois la surveillance en place
-      final stream = directory.watch();
-      _changerStatut(RepertoireStatus.surveille);
+    void surveillerRepertoire(
+        Directory directory, Repertoire repertoireSurveille) {
+      try {
+        final stream = directory.watch();
+        _changerStatut(RepertoireStatus.surveille);
 
-      stream.listen(
-        (FileSystemEvent event) {
-          try {
-            final sourceRepertoire = this;
-            String eventDescription = "";
-            switch (event.runtimeType) {
-              case FileSystemCreateEvent:
-                if (hasWritable(permissions)) {
-                  if (sourceRepertoire == remoteRepertoire) {
-                    eventDescription = 'Création détectée dans REMOTE: ${event.path}';
-                    eventStreamController.add(eventDescription);
-                    _traiterCreation(
-                      event as FileSystemCreateEvent,
-                      zipRepertoire, // ZIP comme destination
-                      localRepertoire,
-                    );
-                  } else if (sourceRepertoire == localRepertoire) {
-                    eventDescription = 'Création détectée dans LOCALE: ${event.path}';
+        stream.listen(
+          (FileSystemEvent event) {
+            try {
+              final sourceRepertoire = repertoireSurveille;
+              String eventDescription = "";
+              switch (event.runtimeType) {
+                case FileSystemCreateEvent:
+                  
+                    if (sourceRepertoire == remoteRepertoire) {
+                      if (hasWritable(permissions)) {
+                      eventDescription =
+                          'Création détectée dans REMOTE: ${event.path}';
+                      eventStreamController.add(eventDescription);
+                      _hanldeCreationEvent(
+                        event as FileSystemCreateEvent,
+                        repertoireSurveille,
+                        zipRepertoire, // ZIP comme destination
+                        localRepertoire,
+                      );
+                    } 
+                    }
+                    // else if (sourceRepertoire == localRepertoire) {
+                    //   eventDescription =
+                    //       'Création détectée dans LOCALE: ${event.path}';
 
-                    _traiterCreation(
-                      event as FileSystemCreateEvent,
-                      zipRepertoire, // ZIP comme destination
-                      remoteRepertoire,
-                    );
+                    //   _traiterCreation(
+                    //     event as FileSystemCreateEvent,
+                    //     zipRepertoire, // ZIP comme destination
+                    //     remoteRepertoire,
+                    //   );
+                    // }
+                  
+                  
+
+                  break;
+                case FileSystemModifyEvent:
+                    if (sourceRepertoire == localRepertoire) {
+                  if (hasWritable(localRepertoire!.permissions)) {
+                      eventDescription =
+                          "Modification détectée dans LOCALE: ${event.path}";
+
+                      _hanldeModificationEvent(
+                        event as FileSystemModifyEvent,
+                        repertoireSurveille,
+                        zipRepertoire,
+                        remoteRepertoire,
+                      );
+                    }
+
+                    if (sourceRepertoire == remoteRepertoire) {
+                      eventDescription =
+                          'Modification détectée dans REMOTE ${event.path}';
+                      _hanldeModificationEvent(
+                        event as FileSystemModifyEvent,
+                        repertoireSurveille,
+                        zipRepertoire,
+                        localRepertoire,
+                      );
+                    }
                   }
-                }
+                  break;
 
-                break;
-              case FileSystemModifyEvent:
-                if (hasWritable(permissions)) {
-                  if (sourceRepertoire == localRepertoire) {
-                    eventDescription = "Modification détectée dans LOCALE: ${event.path}";
-
-                    _traiterModification(
-                      event as FileSystemModifyEvent,
-                      zipRepertoire, // ZIP comme destination
-                      remoteRepertoire,
-                    );
+                case FileSystemDeleteEvent:
+                  if (hasWritable(permissions)) {
+                    eventDescription =
+                        'Suppression détectée dans REMOTE : ${event.path}';
+                    _hanldeDeletionEvent(event as FileSystemDeleteEvent,
+                        remoteRepertoire, localRepertoire);
                   }
-
-                  if (sourceRepertoire == remoteRepertoire) {
-                    eventDescription = 'Modification détectée dans REMOTE ${event.path}';
-                    _traiterModification(
-                      event as FileSystemModifyEvent,
-                      zipRepertoire, // ZIP comme destination
-                      localRepertoire,
-                    );
+                  break;
+                case FileSystemMoveEvent:
+                  if (hasWritable(permissions)) {
+                    eventDescription = 'Déplacement détecté: ${event.path}';
+                    _hanldeMoveEvent(event as FileSystemMoveEvent);
                   }
-                }
-                break;
+                  break;
+                default:
+                  // Gérer d'autres types d'événements si nécessaire
+                  eventDescription = 'Événement non géré: ${event.runtimeType}';
+                  print('Événement non géré: ${event.runtimeType}');
+                  break;
+              }
 
-              case FileSystemDeleteEvent:
-                if (hasWritable(permissions)) {
-                  eventDescription = 'Suppression détectée dans REMOTE : ${event.path}';
-                  _traiterSuppression(
-                      event as FileSystemDeleteEvent,remoteRepertoire,localRepertoire);
-                }
-                break;
-              case FileSystemMoveEvent:
-                if (hasWritable(permissions)) {
-                  eventDescription = 'Déplacement détecté: ${event.path}';
-                  _traiterMove(event as FileSystemMoveEvent);
-                }
-                break;
-              default:
-                // Gérer d'autres types d'événements si nécessaire
-                eventDescription = 'Événement non géré: ${event.runtimeType}';
-                print('Événement non géré: ${event.runtimeType}');
-                break;
+              eventStreamController.add(eventDescription);
+            } catch (e) {
+              // Gérer les erreurs spécifiques aux opérations d'événements
+              print('Erreur lors du traitement de l\'événement: $e');
             }
+          },
+          onError: (error) {
+            // Gérer les erreurs liées au flux de surveillance
+            print('Erreur de surveillance du répertoire: $error');
+          },
+        );
+      } catch (e) {
+        print('Erreur lors de la création du flux de surveillance: $e');
+      }
+    }
 
-            eventStreamController.add(eventDescription);
-          } catch (e) {
-            // Gérer les erreurs spécifiques aux opérations d'événements
-            print('Erreur lors du traitement de l\'événement: $e');
-          }
-        },
-        onError: (error) {
-          // Gérer les erreurs liées au flux de surveillance
-          print('Erreur de surveillance du répertoire: $error');
-        },
-      );
-    } catch (e) {
-      // Gérer les erreurs liées à la création du flux de surveillance
-      print('Erreur lors de la création du flux de surveillance: $e');
+    if (remoteRepertoire != null) {
+      surveillerRepertoire(Directory(remoteRepertoire.path), remoteRepertoire);
+    }
+   
+    if (localRepertoire != null) {
+      surveillerRepertoire(Directory(localRepertoire.path), localRepertoire);
     }
   }
 
-  Future<void> _traiterCreation(FileSystemCreateEvent event,
+  Future<void> _hanldeCreationEvent(FileSystemCreateEvent event, Repertoire? repertoireSurveile,
       Repertoire? zipRepertoire, Repertoire? destinationRepertoire) async {
-    print('Création détectée: ${event.path}');
+  
 
     // Vérifie si l'événement concerne un fichier ZIP
     if (event.path.endsWith('.zip')) {
-      if (type == 'dossier' && name == 'REMOTE') {
+      if (type == 'dossier' && repertoireSurveile!.name == "REMOTE") {
         if (zipRepertoire != null) {
           if (File(event.path).existsSync()) {
             // ignore: non_constant_identifier_names
@@ -300,9 +320,8 @@ class Repertoire {
     }
   }
 
-  Future<void> _traiterModification(FileSystemModifyEvent event,
-      Repertoire? zipRepertoire, Repertoire? destinationRepertoire) async {
-    if (type == "dossier" && name == "LOCALE") {
+  Future<void> _hanldeModificationEvent(FileSystemModifyEvent event, Repertoire? repertoireSurveille, Repertoire? zipRepertoire, Repertoire? destinationRepertoire) async {
+    if (type == "dossier" && repertoireSurveille!.name == "LOCALE") {
       if (zipRepertoire != null) {
         final file = File(event.path);
         if (file.existsSync()) {
@@ -337,20 +356,22 @@ class Repertoire {
             }
           }
         } else {
-          print("Le fichier ZIP n'existe pas: ${event.path} ou est en cours de copie");
+          print(
+              "Le fichier ZIP n'existe pas: ${event.path} ou est en cours de copie");
         }
       }
     }
   }
 
-  void _traiterSuppression(FileSystemDeleteEvent event, final remoteRepertoire,final localRepertoire) {
+  void _hanldeDeletionEvent(FileSystemDeleteEvent event, final remoteRepertoire,
+      final localRepertoire) {
     print("Suppression d'un repertoire direct détectée: ${event.path}");
-    if (type == "dossier" && name == "REMOTE") {
-      _deleteFromLocalDirectory(event.path, remoteRepertoire,localRepertoire);
+    if (type == "dossier" && event.path.contains("REMOTE")) {
+      _deleteFromLocalDirectory(event.path, remoteRepertoire, localRepertoire);
     }
   }
 
-  Future<void> _traiterMove(FileSystemMoveEvent event) async {
+  Future<void> _hanldeMoveEvent(FileSystemMoveEvent event) async {
     print('Déplacement détecté: ${event.path}');
   }
 
@@ -364,7 +385,8 @@ class Repertoire {
     return filePath.contains('LOCALE');
   }
 
-  void _deleteFromLocalDirectory(String path, final remoteRepertoire,final localRepertoire) async {
+  void _deleteFromLocalDirectory(
+      String path, final remoteRepertoire, final localRepertoire) async {
     try {
       final localDir = Directory(localRepertoire.path);
       final remoteDir = Directory(remoteRepertoire.path);
@@ -374,12 +396,12 @@ class Repertoire {
 
       for (var entity in entities) {
         final entityBaseName = getBaseName(entity.path);
-       final findedInRemote = await findPathInDirectory(remoteDir,path);
+        final findedInRemote = await findPathInDirectory(remoteDir, path);
         if ((entityBaseName == eventBaseName) && !findedInRemote) {
           if (entity is File) {
             try {
               await entity.delete();
-              print("Fichier supprimée : ${entity.path}");
+              print("Fichier suppriméeeeeeeeeeeeeeee : ${entity.path}");
             } catch (e) {
               print("Erreur lors de la suppression du fichier: $e");
             }
@@ -402,21 +424,21 @@ class Repertoire {
   String getBaseName(String path) {
     final fileName = path.split(Platform.pathSeparator).last;
     return fileName.split('.').first;
-  
   }
-  Future<bool> findPathInDirectory(Directory directory, String pathToFind) async {
-  try {
-    await for (var entity in directory.list(recursive: true)) {
-      if (entity.path == pathToFind) {
-      print('Trouvé: $pathToFind');
-        return true;
-      }
-    }
-  } catch (e) {
-    print('Erreur: $e');
-  }
-  print('Non trouvé: $pathToFind');  
-  return false;
-}
 
+  Future<bool> findPathInDirectory(
+      Directory directory, String pathToFind) async {
+    try {
+      await for (var entity in directory.list(recursive: true)) {
+        if (entity.path == pathToFind) {
+          print('Trouvé: $pathToFind');
+          return true;
+        }
+      }
+    } catch (e) {
+      print('Erreur: $e');
+    }
+    print('Non trouvé: $pathToFind');
+    return false;
+  }
 }

@@ -11,7 +11,6 @@ import 'package:files_handler/utils/findParentWithLocaleAscendant.dart';
 import 'package:files_handler/utils/isStableSinceOneMinute.dart';
 
 class SubDirectoryWatcher {
-  final Directory directory;
   final List<StreamSubscription<FileSystemEvent>> _subscriptions = [];
   final Repertoire? remoteRepertoire;
   final Repertoire? zipRepertoire;
@@ -21,16 +20,21 @@ class SubDirectoryWatcher {
   final StreamController<String> _eventStreamController =
       StreamController<String>.broadcast();
 
-  SubDirectoryWatcher(this.directory, this.remoteRepertoire, this.zipRepertoire,
+  SubDirectoryWatcher(this.remoteRepertoire, this.zipRepertoire,
       this.localRepertoire);
 
   // Fonction récursive pour surveiller un répertoire et ses sous-répertoires
   void watchRecursive() {
     // Surveiller le répertoire actuel
-    _watchSubDirectory(directory);
+    _watchSubDirectory(Directory(remoteRepertoire!.path));
 
     // Parcourir les sous-répertoires de manière récursive
-    directory.list(recursive: true).listen((FileSystemEntity entity) {
+    Directory(remoteRepertoire!.path).list(recursive: true).listen((FileSystemEntity entity) {
+      if (entity is Directory) {
+        _watchSubDirectory(entity);
+      }
+    });
+    Directory(localRepertoire!.path).list(recursive: true).listen((FileSystemEntity entity) {
       if (entity is Directory) {
         _watchSubDirectory(entity);
       }
