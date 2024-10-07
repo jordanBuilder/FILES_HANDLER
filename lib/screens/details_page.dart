@@ -44,9 +44,7 @@ class _DetailsPageState extends State<DetailsPage> {
 
     // Démarrer la surveillance des répertoires lorsque la page est chargée
     widget.remoteRepertoire.ecouterEvenements(widget.remoteRepertoire,
-        widget.zipRepertoire, widget.localRepertoire, _eventStreamController!);
-
-    
+        widget.zipRepertoire, widget.localRepertoire);   
   }
 
   @override

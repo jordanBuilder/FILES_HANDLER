@@ -1,46 +1,58 @@
+// ignore_for_file: prefer_const_constructors
+
+import 'package:files_handler/screens/tinyWindow.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/home_screen.dart';
-import 'screens/details_page.dart'; // La page des détails
 import 'models/repertoire.dart'; // Les modèles de Répertoire
 import 'models/dossier.dart'; // Le modèle Dossier qui hérite de Répertoire
-import 'package:win32/win32.dart';
+import 'package:bitsdojo_window/bitsdojo_window.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final prefs = await SharedPreferences.getInstance();
-  
-  // Vérifier si les chemins sont présents dans le SharedPreferences
   final hasPaths = prefs.containsKey('remotePath') &&
-                   prefs.containsKey('zipPath') &&
-                   prefs.containsKey('localePath');
+      prefs.containsKey('zipPath') &&
+      prefs.containsKey('localePath');
 
   if (hasPaths) {
-
-    final hWnd = GetConsoleWindow();
-  ShowWindow(hWnd, SHOW_WINDOW_CMD.SW_HIDE);
-
-    // Si les chemins existent, les récupérer
     final remotePath = prefs.getString('remotePath')!;
     final zipPath = prefs.getString('zipPath')!;
     final localePath = prefs.getString('localePath')!;
-    
-    // Créer les objets Répertoire avec les chemins récupérés
+
     Repertoire remoteRepertoire = Dossier(path: remotePath);
     Repertoire zipRepertoire = Dossier(path: zipPath);
     Repertoire localRepertoire = Dossier(path: localePath);
 
-    // Lancer l'application et diriger vers la DetailsPage
+    remoteRepertoire.ecouterEvenements(
+        remoteRepertoire, zipRepertoire, localRepertoire);
+
     runApp(MyApp(
-      showHomeScreen: false, // Ne pas montrer la HomeScreen, mais la DetailsPage
+      showHomeScreen: false,
       remoteRepertoire: remoteRepertoire,
       zipRepertoire: zipRepertoire,
       localRepertoire: localRepertoire,
     ));
-
-   
+    doWhenWindowReady(() {
+      final win = appWindow;
+      win.minSize = Size(200, 150); // Définir la taille minimale de la fenêtre
+      win.size = Size(200, 150); // Définir la taille initiale de la fenêtre
+      win.alignment = Alignment
+          .bottomRight; // Placer la fenêtre dans le coin inférieur droit
+      win.show();
+    });
   } else {
     // Si les chemins ne sont pas présents, afficher la HomeScreen pour entrer les chemins
     runApp(MyApp(showHomeScreen: true));
+    
+    doWhenWindowReady(() {
+      final win = appWindow;
+      win.minSize = Size(800, 700); // Taille minimale pour HomeScreen
+      win.size = Size(900, 600); // Taille initiale par défaut
+      win.alignment = Alignment.center; // Centrer la fenêtre
+
+      win.show();
+    });
   }
 }
 
@@ -51,10 +63,10 @@ class MyApp extends StatelessWidget {
   final Repertoire? localRepertoire;
 
   const MyApp({
-    super.key, 
-    required this.showHomeScreen, 
-    this.remoteRepertoire, 
-    this.zipRepertoire, 
+    super.key,
+    required this.showHomeScreen,
+    this.remoteRepertoire,
+    this.zipRepertoire,
     this.localRepertoire,
   });
 
@@ -67,13 +79,42 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: showHomeScreen 
-        ? const HomeScreen() // Afficher la HomeScreen si les chemins ne sont pas présents
-        : DetailsPage(
-            remoteRepertoire: remoteRepertoire!, // Passer les répertoires
-            zipRepertoire: zipRepertoire!,
-            localRepertoire: localRepertoire!,
-          ), // Afficher la DetailsPage si les chemins sont présents
+      home: showHomeScreen
+          ? HomeScreen(onResetPaths: () async {
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.remove('remotePath');
+              await prefs.remove('zipPath');
+              await prefs.remove('localePath');
+              doWhenWindowReady(() {
+                final win = appWindow;
+                win.minSize = Size(200, 150);
+                win.size = Size(200, 150);
+                win.alignment = Alignment.bottomRight;
+                win.show();
+              });
+              runApp(const MyApp(showHomeScreen: true));
+            })
+          : TinyWindow(
+              remoteRepertoire:
+                  remoteRepertoire!, // Passer le remoteRepertoire ici
+              zipRepertoire: zipRepertoire!, // Passer le zipRepertoire ici
+              localRepertoire: localRepertoire!,
+              onResetPaths: () async {
+                final prefs = await SharedPreferences.getInstance();
+                await prefs.remove('remotePath');
+                await prefs.remove('zipPath');
+                await prefs.remove('localePath');
+                doWhenWindowReady(() {
+                  final win = appWindow;
+                  win.minSize =Size(800, 700);
+                  win.size = Size(900, 600);
+                  win.alignment = Alignment
+                      .center; // Placer la fenêtre dans le coin inférieur droit
+                  win.show();
+                });
+                runApp(const MyApp(showHomeScreen: true));
+              },
+            ), // Afficher la DetailsPage si les chemins sont présents
     );
   }
 }

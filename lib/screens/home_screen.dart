@@ -1,6 +1,6 @@
+import 'package:files_handler/screens/tinyWindow.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'details_page.dart';
 import '../models/repertoire.dart';
 import '../models/dossier.dart';
 
@@ -8,7 +8,8 @@ final _windowsPathRegex =
     RegExp(r'^[a-zA-Z]:\\[^<>:"/\\|?*\n\r]+(\\[^<>:"/\\|?*\n\r]+)*\\?$');
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+    final VoidCallback onResetPaths;
+    const HomeScreen({Key? key,required this.onResetPaths,}) : super(key: key);
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
@@ -73,10 +74,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 // Aller vers la page des détails et passer les objets Repertoire
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (context) => DetailsPage(
+                    builder: (context) => TinyWindow(
                       remoteRepertoire: remoteRepertoire,
                       zipRepertoire: zipRepertoire,
                       localRepertoire: localRepertoire,
+                      onResetPaths: widget.onResetPaths,
                     ),
                   ),
                 );
