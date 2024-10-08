@@ -26,15 +26,7 @@ class _TinyWindowState extends State<TinyWindow> {
   @override
   void initState() {
     super.initState();
-    doWhenWindowReady(() {
-      final win = appWindow;
-      win.minSize = Size(200, 150); // Définir la taille minimale de la fenêtre
-      win.size = Size(200, 150); // Définir la taille initiale de la fenêtre
-      win.alignment = Alignment
-          .bottomRight; // Placer la fenêtre dans le coin inférieur droit
-      win.show();
-    });
-
+  
     widget.remoteRepertoire.ecouterEvenements(
       widget.remoteRepertoire,
       widget.zipRepertoire,
@@ -54,11 +46,13 @@ class _TinyWindowState extends State<TinyWindow> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              IconButton(
-                icon: const Icon(Icons.remove_red_eye),
-                onPressed: () {
-                  appWindow.hide();
-                },
+              Flexible(
+                child: IconButton(
+                  icon: const Icon(Icons.remove_red_eye),
+                  onPressed: () {
+                    appWindow.hide();
+                  },
+                ),
               ),
               Padding(
                 padding: const EdgeInsets.all(8.0),

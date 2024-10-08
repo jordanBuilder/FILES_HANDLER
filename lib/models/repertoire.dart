@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:async';
 import 'package:files_handler/utils/deplacer.dart';
 import 'package:files_handler/utils/dezipper.dart';
+import 'package:files_handler/utils/isTemporaryFile.dart';
 import 'package:files_handler/utils/zipper.dart';
 import 'package:path/path.dart';
 import 'sub_directory_watcher.dart';
@@ -196,24 +197,24 @@ class Repertoire {
                     if (hasWritable(permissions)) {
                       eventDescription =
                           'Création détectée dans REMOTE: ${event.path}';
-                      _hanldeCreationEvent(
-                        event as FileSystemCreateEvent,
-                        repertoireSurveille,
-                        zipRepertoire, // ZIP comme destination
-                        localRepertoire,
-                      );
+
+                      if (!isTemporaryFile(event.path)) {
+                        _hanldeCreationEvent(
+                          event as FileSystemCreateEvent,
+                          repertoireSurveille,
+                          zipRepertoire, // ZIP comme destination
+                          localRepertoire,
+                        );
+                      }
+                    }
+                  } else if (sourceRepertoire == localRepertoire) {
+                    eventDescription =
+                        'Création détectée dans LOCALE: ${event.path}';
+                    if (FileSystemEntity.isDirectorySync(event.path)) {
+                      surveillerRepertoire(
+                          Directory(event.path), localRepertoire!);
                     }
                   }
-                  // else if (sourceRepertoire == localRepertoire) {
-                  //   eventDescription =
-                  //       'Création détectée dans LOCALE: ${event.path}';
-
-                  //   _traiterCreation(
-                  //     event as FileSystemCreateEvent,
-                  //     zipRepertoire, // ZIP comme destination
-                  //     remoteRepertoire,
-                  //   );
-                  // }
 
                   break;
                 case FileSystemModifyEvent:
@@ -396,22 +397,31 @@ class Repertoire {
         if ((entityBaseName == eventBaseName) && !findedInRemote) {
           if (entity is File) {
             try {
-            // WindowsPopup.showAutoCloseWarning(path);
-                await entity.delete();
-                print("Fichier supprimée: ${entity.path}");
-              
+              WindowsPopup.showAutoCloseWarning(path);
+              await entity.delete();
+              print("Fichier supprimé: ${entity.path}");
             } catch (e) {
-              print("Erreur lors de la suppression du fichier: $e");
+              if (e is FileSystemException && e.osError?.errorCode == 2) {
+                // Error code 2 corresponds to "No such file or directory" on Windows
+                print(
+                    "Le fichier a été  supprimé par une action sur le bureau ou n'existe pas: ${entity.path}");
+              } else {
+                print("Erreur lors de la suppression du fichier: $e");
+              }
             }
           } else if (entity is Directory) {
             try {
-            // WindowsPopup.showAutoCloseWarning(path);
-            
-                await entity.delete(recursive: true);
-                print("Dossier supprimé: $path");
-          
+              WindowsPopup.showAutoCloseWarning(path);
+              await entity.delete(recursive: true);
+              print("Dossier supprimé: $path");
             } catch (e) {
-              print("Erreur lors de la suppression du dossier! $e");
+              if (e is FileSystemException && e.osError?.errorCode == 2) {
+                // Error code 2 corresponds to "No such file or directory" on Windows
+                print(
+                    "Le dossier a été supprimé par une action sur le bureau ou n'existe pas: ${entity.path}");
+              } else {
+                print("Erreur lors de la suppression du dossier! $e");
+              }
             }
           }
         }

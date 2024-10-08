@@ -106,13 +106,13 @@ class MyApp extends StatelessWidget {
                 await prefs.remove('localePath');
                 doWhenWindowReady(() {
                   final win = appWindow;
-                  win.minSize =Size(800, 700);
-                  win.size = Size(900, 600);
+                  win.minSize =Size(900, 800);
+                  win.size = Size(1000, 900);
                   win.alignment = Alignment
                       .center; // Placer la fenêtre dans le coin inférieur droit
                   win.show();
                 });
-                runApp(const MyApp(showHomeScreen: true));
+                runApp(const MyApp(showHomeScreen: false));
               },
             ), // Afficher la DetailsPage si les chemins sont présents
     );

@@ -1,3 +1,5 @@
+// ignore_for_file: constant_identifier_names
+
 import 'dart:async';
 import 'dart:ffi';
 import 'package:ffi/ffi.dart';
@@ -19,10 +21,12 @@ class WindowsPopup {
     final caption = "Avertissement de suppression".toNativeUtf16();
 
     // Créer un thread qui ferme automatiquement le message après un délai
-    Timer(Duration(milliseconds: 1500), () {
+    Timer(Duration(milliseconds: 3000), () {
       final hwnd = FindWindow(nullptr, caption); // Trouver la fenêtre du message
       if (hwnd != nullptr) {
         PostMessage(hwnd, WM_CLOSE, 0, 0); // Envoyer un message pour fermer la fenêtre
+      } else {
+        print('Erreur: fenêtre introuvable.');
       }
     });
 

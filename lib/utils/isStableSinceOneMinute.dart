@@ -14,19 +14,19 @@ Future<bool> estStableDepuisUneMinute(String filePath) async {
         print("Le fichier n'existe pas: $filePath");
         return false;
       }
-      DateTime dateDerniereModification =
+      DateTime? dateDerniereModification =
           await obtenirDateDerniereModification(filePath);
 
       // Attendre une minute
       await Future.delayed(attente);
 
       // Vérifier la date de la dernière modification après une minute
-      DateTime nouvelleDateDerniereModification =
+      DateTime? nouvelleDateDerniereModification =
           await obtenirDateDerniereModification(filePath);
 
       // Comparer les deux dates
-      return dateDerniereModification
-          .isAtSameMomentAs(nouvelleDateDerniereModification);
+      return dateDerniereModification!
+          .isAtSameMomentAs(nouvelleDateDerniereModification!);
     } catch (e) {
       print(
           'Erreur lors de la récupération de la date de la dernière modification: $e');

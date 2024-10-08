@@ -3,6 +3,7 @@
 import 'dart:io';
 import 'dart:async';
 import 'package:files_handler/utils/deplacer.dart';
+import 'package:files_handler/utils/isTemporaryFile.dart';
 import 'package:files_handler/utils/zipper.dart';
 import 'package:path/path.dart';
 
@@ -20,8 +21,8 @@ class SubDirectoryWatcher {
   final StreamController<String> _eventStreamController =
       StreamController<String>.broadcast();
 
-  SubDirectoryWatcher(this.remoteRepertoire, this.zipRepertoire,
-      this.localRepertoire);
+  SubDirectoryWatcher(
+      this.remoteRepertoire, this.zipRepertoire, this.localRepertoire);
 
   // Fonction récursive pour surveiller un répertoire et ses sous-répertoires
   void watchRecursive() {
@@ -29,12 +30,16 @@ class SubDirectoryWatcher {
     _watchSubDirectory(Directory(remoteRepertoire!.path));
 
     // Parcourir les sous-répertoires de manière récursive
-    Directory(remoteRepertoire!.path).list(recursive: true).listen((FileSystemEntity entity) {
+    Directory(remoteRepertoire!.path)
+        .list(recursive: true)
+        .listen((FileSystemEntity entity) {
       if (entity is Directory) {
         _watchSubDirectory(entity);
       }
     });
-    Directory(localRepertoire!.path).list(recursive: true).listen((FileSystemEntity entity) {
+    Directory(localRepertoire!.path)
+        .list(recursive: true)
+        .listen((FileSystemEntity entity) {
       if (entity is Directory) {
         _watchSubDirectory(entity);
       }
@@ -59,10 +64,16 @@ class SubDirectoryWatcher {
                 message =
                     'Création d\'un sous repertoire détectée dans ${event.path}';
               }
+              Directory(event.path)
+                  .list(recursive: true)
+                  .listen((FileSystemEntity entity) {
+                if (entity is Directory) {
+                  _watchSubDirectory(entity);
+                }
+              });
               break;
 
             case FileSystemEvent.modify:
-            
               final entity = FileSystemEntity.typeSync(event.path) ==
                       FileSystemEntityType.directory
                   ? Directory(event.path)
