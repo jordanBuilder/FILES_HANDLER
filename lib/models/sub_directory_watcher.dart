@@ -27,7 +27,7 @@ class SubDirectoryWatcher {
   // Fonction récursive pour surveiller un répertoire et ses sous-répertoires
   void watchRecursive() {
     // Surveiller le répertoire actuel
-    _watchSubDirectory(Directory(remoteRepertoire!.path));
+    // _watchSubDirectory(Directory(remoteRepertoire!.path));
 
     // Parcourir les sous-répertoires de manière récursive
     Directory(remoteRepertoire!.path)
@@ -51,19 +51,8 @@ class SubDirectoryWatcher {
     try {
       final subscription = dir.watch().listen(
         (event) async {
-          String message = '';
           switch (event.type) {
             case FileSystemEvent.create:
-              final entity = FileSystemEntity.typeSync(event.path) ==
-                      FileSystemEntityType.directory
-                  ? Directory(event.path)
-                  : File(event.path);
-              if (FileSystemEntity.typeSync(event.path) ==
-                      FileSystemEntityType.file &&
-                  !entity.parent.path.endsWith("LOCALE")) {
-                message =
-                    'Création d\'un sous repertoire détectée dans ${event.path}';
-              }
               Directory(event.path)
                   .list(recursive: true)
                   .listen((FileSystemEntity entity) {
@@ -74,59 +63,49 @@ class SubDirectoryWatcher {
               break;
 
             case FileSystemEvent.modify:
-              final entity = FileSystemEntity.typeSync(event.path) ==
-                      FileSystemEntityType.directory
-                  ? Directory(event.path)
-                  : File(event.path);
-              if (FileSystemEntity.typeSync(event.path) ==
-                      FileSystemEntityType.file &&
-                  !entity.parent.path.endsWith("LOCALE")) {
-                message =
-                    "Modification d'un sous-répertoire détectée dans ${event.path}";
-                print(
-                    "Modification d'un sous-répertoire détectée dans ${event.path}");
-                if (event.path.contains("LOCALE")) {
-                  Directory? parentAvecLocale =
-                      trouverParentAvecAscendantLOCALE(event.path);
-                  if (parentAvecLocale != null) {
-                    message =
-                        "Dossier parent trouvé avec ascendant 'LOCALE': ${parentAvecLocale.path}";
-                    print(
-                        "Dossier parent trouvé avec ascendant 'LOCALE': ${parentAvecLocale.path}");
-                    if (await estStableDepuisUneMinute(event.path)) {
-                      // Nom du fichier ZIP
-                      String dirToZipWithZipExtension =
-                          "${basename(parentAvecLocale.path)}.zip";
-                      String zipDestinationPath =
-                          join(zipRepertoire!.path, dirToZipWithZipExtension);
-
-                      message =
-                          "Sur le point de zipper le dossier: ${parentAvecLocale.path} vers $zipDestinationPath";
-
+              if (event.path.contains("LOCALE")) {
+                final entity = FileSystemEntity.typeSync(event.path) ==
+                        FileSystemEntityType.directory
+                    ? Directory(event.path)
+                    : File(event.path);
+                if (FileSystemEntity.typeSync(event.path) ==
+                        FileSystemEntityType.file &&
+                    !entity.parent.path.endsWith("LOCALE")) {
+                  print(
+                      "Modification d'un sous-répertoire détectée dans ${event.path}");
+                  if (event.path.contains("LOCALE")) {
+                    Directory? parentAvecLocale =
+                        trouverParentAvecAscendantLOCALE(event.path);
+                    if (parentAvecLocale != null) {
                       print(
-                          "Sur le point de zipper le dossier: ${parentAvecLocale.path} vers $zipDestinationPath");
+                          "Dossier parent trouvé avec ascendant 'LOCALE': ${parentAvecLocale.path}");
+                      if (await estStableDepuisUneMinute(event.path)) {
+                        // Nom du fichier ZIP
+                        String dirToZipWithZipExtension =
+                            "${basename(parentAvecLocale.path)}.zip";
+                        String zipDestinationPath =
+                            join(zipRepertoire!.path, dirToZipWithZipExtension);
 
-                      // Zipper le dossier
-                      String zipFilePath = await zipper(
-                          parentAvecLocale.path, zipDestinationPath);
-
-                      if (zipFilePath.endsWith('.zip')) {
-                        message =
-                            'Zippage du dossier terminé, dossier créé à: $zipFilePath';
                         print(
-                            'Zippage du dossier terminé, dossier créé à: $zipFilePath');
+                            "Sur le point de zipper le dossier: ${parentAvecLocale.path} vers $zipDestinationPath");
 
-                        // Déplacer le fichier ZIP vers le répertoire de destination
-                        await deplacer(zipFilePath, remoteRepertoire!.path);
+                        // Zipper le dossier
+                        String zipFilePath = await zipper(
+                            parentAvecLocale.path, zipDestinationPath);
+
+                        if (zipFilePath.endsWith('.zip')) {
+                          print(
+                              'Zippage du dossier terminé, dossier créé à: $zipFilePath');
+
+                          // Déplacer le fichier ZIP vers le répertoire de destination
+                          await deplacer(zipFilePath, remoteRepertoire!.path);
+                        } else {
+                          print('Erreur lors du zippage: $zipFilePath');
+                        }
                       } else {
-                        message = 'Erreur lors du zippage: $zipFilePath';
-                        print('Erreur lors du zippage: $zipFilePath');
+                        print(
+                            'Le fichier a été modifié pendant l\'attente. Processus de zip avorté');
                       }
-                    } else {
-                      message =
-                          'Le fichier a été modifié pendant l\'attente. Processus de zip avorté';
-                      print(
-                          'Le fichier a été modifié pendant l\'attente. Processus de zip avorté');
                     }
                   }
                 }
@@ -138,7 +117,6 @@ class SubDirectoryWatcher {
             case FileSystemEvent.move:
               break;
           }
-          _eventStreamController.add(message);
         },
         onError: (error) {
           _eventStreamController

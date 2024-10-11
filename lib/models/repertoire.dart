@@ -1,9 +1,8 @@
-// ignore_for_file: avoid_print, unused_local_variable, unnecessary_brace_in_string_interps
+// ignore_for_file: avoid_print, unused_local_variable, unnecessary_brace_in_string_interps, type_literal_in_constant_pattern
 import 'dart:io';
 import 'dart:async';
 import 'package:files_handler/utils/deplacer.dart';
 import 'package:files_handler/utils/dezipper.dart';
-import 'package:files_handler/utils/isTemporaryFile.dart';
 import 'package:files_handler/utils/zipper.dart';
 import 'package:path/path.dart';
 import 'sub_directory_watcher.dart';
@@ -87,54 +86,42 @@ class Repertoire {
     };
   }
 
-  void verifierPermissions(String path) {
-    final entity = FileSystemEntity.typeSync(path);
-
-    if (entity == FileSystemEntityType.notFound) {
-      print("Le Chemin spécifié n'existe pas !");
+  Future<void> verifierPermissions(String path) async {
+    final userName = Platform.environment['USERNAME'];
+    if (userName == null) {
+      print("Impossible de récupérer le nom d'utilisateur.");
       return;
     }
-
-    if (entity == FileSystemEntityType.file) {
-      final file = File(path);
-
-      try {
-        file.readAsBytesSync();
-        ajouterPermissions(RepertoirePermissions.readable);
-      } catch (e) {
-        print("Le fichier n'est pas lisible : $e");
-        ajouterPermissions(RepertoirePermissions.unreadable);
-      }
-
-      try {
-        file.writeAsStringSync(" ");
-        ajouterPermissions(RepertoirePermissions.writable);
-      } catch (e) {
-        print("Le fichier n'est pas écrivable: $e");
-        ajouterPermissions(RepertoirePermissions.unwritable);
-      }
-    } else if (entity == FileSystemEntityType.directory) {
-      final directory = Directory(path);
-      try {
-        directory.listSync();
-        ajouterPermissions(RepertoirePermissions.readable);
-      } catch (e) {
-        print("Le dossier n'est pas accessible: $e");
-        ajouterPermissions(RepertoirePermissions.unreadable);
-      }
-
-      try {
-        final testFile = File('${directory.path}/test_permissions.txt');
-        testFile.writeAsStringSync('Test');
-        ajouterPermissions(RepertoirePermissions.writable);
-        testFile.deleteSync();
-      } catch (e) {
-        print("Le dossier n'est pas écrivable");
-        ajouterPermissions(RepertoirePermissions.unwritable);
-      }
-    } else {
-      print("Le chemin spécifié n'est ni un fichier ni un repertoire");
+    final result = await Process.run('icacls', [path]);
+    if (result.exitCode != 0) {
+      print("Erreur lors de l'exécution de icacls: ${result.stderr}");
+      return;
     }
+    final output = result.stdout as String;
+    final lines = output.split('\n');
+    print('Permissions de l\'utilisateur $userName sur le répertoire $path :');
+
+    for (var line in lines) {
+      if (line.contains(userName)) {
+        if (line.contains('(R)') ||
+            line.contains('(R,W)') ||
+            line.contains('(F)')) {
+          ajouterPermissions(RepertoirePermissions.readable);
+        }
+        if (line.contains('(W)') ||
+            line.contains('(R,W)') ||
+            line.contains('(F)')) {
+          ajouterPermissions(RepertoirePermissions.writable);
+        }
+      }
+    }
+
+    if (permissions.isEmpty) {
+      ajouterPermissions(RepertoirePermissions.unreadable);
+      ajouterPermissions(RepertoirePermissions.unwritable);
+    }
+    permissions = permissions.toSet().toList();
+    print(permissions);
   }
 
   bool hasReadableAndWritable(List<RepertoirePermissions> permissions) {
@@ -164,7 +151,7 @@ class Repertoire {
       File(filePath).createSync();
       return "Fichier ajouté avec succés.";
     } catch (e) {
-      return "Erreur lors de l\'ajout du fichier: $e";
+      return "Erreur lors de l'ajout du fichier: $e";
     }
   }
 
@@ -190,26 +177,22 @@ class Repertoire {
           (FileSystemEvent event) {
             try {
               final sourceRepertoire = repertoireSurveille;
-              String eventDescription = "";
               switch (event.runtimeType) {
                 case FileSystemCreateEvent:
                   if (sourceRepertoire == remoteRepertoire) {
-                    if (hasWritable(permissions)) {
-                      eventDescription =
-                          'Création détectée dans REMOTE: ${event.path}';
+                    if (hasReadableAndWritable(permissions)) {
+                      print(
+                          "Événement détecté dans REMOTE : ${event.runtimeType}, chemin : ${event.path}");
 
-                      if (!isTemporaryFile(event.path)) {
-                        _hanldeCreationEvent(
-                          event as FileSystemCreateEvent,
-                          repertoireSurveille,
-                          zipRepertoire, // ZIP comme destination
-                          localRepertoire,
-                        );
-                      }
+                      _hanldeCreationEvent(
+                        event as FileSystemCreateEvent,
+                        repertoireSurveille,
+                        zipRepertoire, // ZIP comme destination
+                        localRepertoire,
+                      );
                     }
                   } else if (sourceRepertoire == localRepertoire) {
-                    eventDescription =
-                        'Création détectée dans LOCALE: ${event.path}';
+                    print("Creation detectée dans LOCALE");
                     if (FileSystemEntity.isDirectorySync(event.path)) {
                       surveillerRepertoire(
                           Directory(event.path), localRepertoire!);
@@ -220,9 +203,6 @@ class Repertoire {
                 case FileSystemModifyEvent:
                   if (sourceRepertoire == localRepertoire) {
                     if (hasWritable(localRepertoire!.permissions)) {
-                      eventDescription =
-                          "Modification détectée dans LOCALE: ${event.path}";
-
                       _hanldeModificationEvent(
                         event as FileSystemModifyEvent,
                         repertoireSurveille,
@@ -232,8 +212,6 @@ class Repertoire {
                     }
 
                     if (sourceRepertoire == remoteRepertoire) {
-                      eventDescription =
-                          'Modification détectée dans REMOTE ${event.path}';
                       _hanldeModificationEvent(
                         event as FileSystemModifyEvent,
                         repertoireSurveille,
@@ -246,21 +224,17 @@ class Repertoire {
 
                 case FileSystemDeleteEvent:
                   if (hasWritable(permissions)) {
-                    eventDescription =
-                        'Suppression détectée dans REMOTE : ${event.path}';
                     _hanldeDeletionEvent(event as FileSystemDeleteEvent,
                         remoteRepertoire, localRepertoire);
                   }
                   break;
                 case FileSystemMoveEvent:
                   if (hasWritable(permissions)) {
-                    eventDescription = 'Déplacement détecté: ${event.path}';
                     _hanldeMoveEvent(event as FileSystemMoveEvent);
                   }
                   break;
                 default:
                   // Gérer d'autres types d'événements si nécessaire
-                  eventDescription = 'Événement non géré: ${event.runtimeType}';
                   print('Événement non géré: ${event.runtimeType}');
                   break;
               }

@@ -1,6 +1,7 @@
-// ignore_for_file: avoid_print, unused_local_variable, unnecessary_brace_in_string_interps
+// ignore_for_file: avoid_print, unused_local_variable, unnecessary_brace_in_string_interps, depend_on_referenced_packages
 import 'dart:io';
 import 'dart:async';
+import 'package:archive/archive_io.dart';
 import 'package:path/path.dart';
 
 Future<String> deplacer(String sourcePath, String destinationDirPath) async {
@@ -9,7 +10,7 @@ Future<String> deplacer(String sourcePath, String destinationDirPath) async {
     sourcePath = normalize(sourcePath);
     destinationDirPath = normalize(destinationDirPath);
     final entityType = FileSystemEntity.typeSync(sourcePath);
-    print("type de ce que je veux deplacer $entityType");
+    print("type de ce que je veux deplacer : $entityType");
     // Créer l'objet Directory pour le répertoire de destination
     final destinationDir = Directory(destinationDirPath);
 
@@ -30,8 +31,11 @@ Future<String> deplacer(String sourcePath, String destinationDirPath) async {
         print("Fichier existant à supprimer: $destinationFilePath");
       }
 
-      // Copier le fichier
-      await sourceFile.copy(destinationFilePath);
+      final inputStream = sourceFile.openRead(); // Lire le fichier source
+      final outputStream = File(destinationFilePath).openWrite(); // Écrire dans le fichier de destination
+
+      // Copier le contenu du fichier par morceaux
+      await inputStream.pipe(outputStream);
 
       // Supprimer le fichier source après la copie
       await sourceFile.delete();

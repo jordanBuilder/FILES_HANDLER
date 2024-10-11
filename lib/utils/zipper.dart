@@ -1,6 +1,9 @@
+// ignore_for_file: deprecated_export_use
+
 import 'dart:async';
 import 'dart:io';
 import 'package:archive/archive.dart';
+import 'package:archive/archive_io.dart';
 
 Future<String> zipper(String inputPath, String destinationPath) async {
   try {
@@ -15,12 +18,22 @@ Future<String> zipper(String inputPath, String destinationPath) async {
     if (entity == FileSystemEntityType.file) {
       try {
         final file = File(inputPath);
-        final fileData = file.readAsBytesSync();
-        final relativePath = file.uri.pathSegments.last; // Nom du fichier
-        final archiveFile = ArchiveFile(relativePath, fileData.length, fileData);
+        final inputStream = file.openRead();
+        final relativePath = file.uri.pathSegments.last;
+
+        final buffer = BytesBuilder();
+
+        var archiveFile = ArchiveFile(relativePath, 0, null);
         archive.addFile(archiveFile);
 
-        // Créer le fichier zip
+        await for (final chunk in inputStream) {
+          buffer.add(chunk);
+        }
+
+        archiveFile =
+            ArchiveFile(relativePath, buffer.length, buffer.toBytes());
+        archive.addFile(archiveFile);
+
         final zipFilePath = destinationPath;
         final zipFile = File(zipFilePath);
         if (zipFile.existsSync()) {
@@ -42,24 +55,32 @@ Future<String> zipper(String inputPath, String destinationPath) async {
     } else if (entity == FileSystemEntityType.directory) {
       final directory = Directory(inputPath);
 
-      void addDirectoryToArchive(Directory dir, String baseDir) {
+      Future<void> addDirectoryToArchive(Directory dir, String baseDir) async {
         for (var subEntity in dir.listSync(recursive: true)) {
           if (subEntity is File) {
-            final fileData = subEntity.readAsBytesSync();
+            final inputStream = subEntity.openRead();
             final relativePath = subEntity.path.substring(baseDir.length + 1);
-            // Ajouter le fichier à l'archive avec son chemin relatif
-            archive.addFile(ArchiveFile(relativePath, fileData.length, fileData));
+
+            var archiveFile = ArchiveFile(relativePath, 0, null);
+            archive.addFile(archiveFile);
+
+            final buffer = BytesBuilder();
+
+            await for (final chunk in inputStream) {
+              buffer.add(chunk);
+            }
+
+            archiveFile =
+                ArchiveFile(relativePath, buffer.length, buffer.toBytes());
+            archive.addFile(archiveFile);
           } else if (subEntity is Directory) {
-            // Si c'est un sous-répertoire, ajouter récursivement
             addDirectoryToArchive(subEntity, baseDir);
           }
         }
       }
 
-      // Ajouter le répertoire racine à l'archive
       addDirectoryToArchive(directory, inputPath);
 
-      // Créer le fichier zip
       final zipFilePath = destinationPath;
       final zipFile = File(zipFilePath);
       if (zipFile.existsSync()) {

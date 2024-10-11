@@ -1,15 +1,17 @@
 import 'package:files_handler/screens/tinyWindow.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../models/repertoire.dart';
-import '../models/dossier.dart';
+
 
 final _windowsPathRegex =
     RegExp(r'^[a-zA-Z]:\\[^<>:"/\\|?*\n\r]+(\\[^<>:"/\\|?*\n\r]+)*\\?$');
 
 class HomeScreen extends StatefulWidget {
-    final VoidCallback onResetPaths;
-    const HomeScreen({Key? key,required this.onResetPaths,}) : super(key: key);
+  final VoidCallback onResetPaths;
+  const HomeScreen({
+    Key? key,
+    required this.onResetPaths,
+  }) : super(key: key);
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
@@ -50,10 +52,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
       _savePaths(remotePath, zipPath, localePath);
 
-      Repertoire remoteRepertoire = Dossier(path: remotePath);
-      Repertoire zipRepertoire = Dossier(path: zipPath);
-      Repertoire localRepertoire = Dossier(path: localePath);
-
       // Afficher le dialogue
       showDialog(
         context: context,
@@ -75,9 +73,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (context) => TinyWindow(
-                      remoteRepertoire: remoteRepertoire,
-                      zipRepertoire: zipRepertoire,
-                      localRepertoire: localRepertoire,
+                      remoteRepertoirePath: remotePath,
+                      zipRepertoirePath: remotePath,
+                      localRepertoirePath: remotePath,
                       onResetPaths: widget.onResetPaths,
                     ),
                   ),
