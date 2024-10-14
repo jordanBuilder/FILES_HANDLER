@@ -192,10 +192,11 @@ class Repertoire {
                       );
                     }
                   } else if (sourceRepertoire == localRepertoire) {
-                    print("Creation detectée dans LOCALE");
-                    if (FileSystemEntity.isDirectorySync(event.path)) {
-                      surveillerRepertoire(
-                          Directory(event.path), localRepertoire!);
+                    if (hasReadableAndWritable(localRepertoire!.permissions)) {
+                      print(
+                          "Événement détecté dans LOCALE : ${event.runtimeType}, chemin : ${event.path}");
+                        surveillerRepertoire(
+                            Directory(event.path), localRepertoire);
                     }
                   }
 

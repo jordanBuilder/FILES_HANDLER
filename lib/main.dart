@@ -77,20 +77,20 @@ class MyApp extends StatelessWidget {
               await prefs.remove('remotePath');
               await prefs.remove('zipPath');
               await prefs.remove('localePath');
-              runApp(const MyApp(showHomeScreen: true));
             })
-          : TinyWindow(
-             remoteRepertoirePath: remoteRepertoire!.path,
-             zipRepertoirePath: zipRepertoire!.path,
-             localRepertoirePath: localRepertoire!.path,
-              onResetPaths: () async {
-                final prefs = await SharedPreferences.getInstance();
-                await prefs.remove('remotePath');
-                await prefs.remove('zipPath');
-                await prefs.remove('localePath');
-                runApp(const MyApp(showHomeScreen: false));
-              },
-            ), // Afficher la DetailsPage si les chemins sont présents
+          : (remoteRepertoire != null && zipRepertoire != null && localRepertoire != null)
+        ? TinyWindow(
+            remoteRepertoirePath: remoteRepertoire!.path,
+            zipRepertoirePath: zipRepertoire!.path,
+            localRepertoirePath: localRepertoire!.path,
+            onResetPaths: () async {
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.remove('remotePath');
+              await prefs.remove('zipPath');
+              await prefs.remove('localePath');
+            },
+          )
+        : const Text('Erreur : chemins invalides'), // Option en cas d'erreur, // Afficher la DetailsPage si les chemins sont présents
     );
   }
 }

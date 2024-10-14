@@ -1,3 +1,4 @@
+import 'package:files_handler/main.dart';
 import 'package:files_handler/models/repertoire.dart';
 import 'package:flutter/material.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
@@ -36,7 +37,7 @@ class _TinyWindowState extends State<TinyWindow> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.transparent,
+      backgroundColor: Colors.white,
       body: Center(
         child: Container(
           decoration: const BoxDecoration(
@@ -56,7 +57,15 @@ class _TinyWindowState extends State<TinyWindow> {
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: ElevatedButton(
-                  onPressed: () => widget.onResetPaths(),
+                  onPressed: () {
+                    widget.onResetPaths(); // Appel de la fonction de réinitialisation
+
+                    Navigator.pushAndRemoveUntil(
+                      context, // correction ici
+                      MaterialPageRoute(builder: (context) => const MyApp(showHomeScreen: true)),
+                      (route) => false,
+                    );
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.red[500],
                     foregroundColor: Colors.white,
