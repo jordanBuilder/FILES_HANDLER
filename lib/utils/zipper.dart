@@ -79,7 +79,7 @@ Future<String> zipper(String inputPath, String destinationPath) async {
         }
       }
 
-      addDirectoryToArchive(directory, inputPath);
+     await addDirectoryToArchive(directory, inputPath);
 
       final zipFilePath = destinationPath;
       final zipFile = File(zipFilePath);

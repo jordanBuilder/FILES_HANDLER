@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_print
+// ignore_for_file: avoid_print, use_rethrow_when_possible, unnecessary_import
 
 import 'dart:io';
 import 'dart:async';
@@ -7,46 +7,57 @@ import 'package:archive/archive.dart';
 import 'package:archive/archive_io.dart';
 
 Future<String> dezipper(String zipPath, String destinationPath) async {
+  final inputStream = InputFileStream(zipPath);
   try {
     // Lecture du fichier ZIP avec un InputStream
-    final inputStream = InputFileStream(zipPath);
+    print("path au début du zip: $zipPath");
     final archive = ZipDecoder().decodeBuffer(inputStream);
     String firstExtractedPath = '';
-
+    print("Archive $archive");
     // Extraction de chaque fichier
-    for (var file in archive.files) {
-      final filename = join(destinationPath, file.name);
+    for (var file in archive) {
+      // Chemin normalisé pour le fichier/dossier extrait
+      final filenameAtTheDestination = join(destinationPath, file.name);
+      print("Chemin normalisé: $filenameAtTheDestination");
 
       if (file.isFile) {
-        final outputFile = File(filename);
+        // Si c'est un fichier
+        final outputFile = File(filenameAtTheDestination);
+
+        // Créer le répertoire parent si nécessaire
+        final parentDir = Directory(dirname(filenameAtTheDestination));
+        if (!parentDir.existsSync()) {
+          parentDir.createSync(recursive: true);
+        }
+
+        // Supprimer le fichier existant si besoin
         if (outputFile.existsSync()) {
           outputFile.deleteSync();
         }
-        final outputStream = OutputFileStream(filename);
+
+        // Écrire le contenu du fichier
+        final outputStream = OutputFileStream(filenameAtTheDestination);
         file.writeContent(outputStream);
-        // S'assurer que le répertoire parent existe
-        // Copie du contenu dans le flux de sortie
         await outputStream.close(); // Fermer le flux après écriture
       } else {
-        // Créer le répertoire
-        final dir = Directory(filename);
+        // Si c'est un répertoire, créer le répertoire
+        final dir = Directory(filenameAtTheDestination);
         if (!dir.existsSync()) {
           dir.createSync(recursive: true);
         }
       }
 
       if (firstExtractedPath.isEmpty) {
-        firstExtractedPath = filename;
+        firstExtractedPath = filenameAtTheDestination; // Enregistrer le premier chemin extrait
       }
     }
-
-    inputStream.close(); // Fermer le flux d'entrée après traitement
 
     print("Dézippage du répertoire terminé");
     return firstExtractedPath;
   } catch (e) {
     print('Erreur lors du dézippage: $e');
-    // Relancer l'erreur pour que la méthode retourne une erreur
     throw e;
+  } finally {
+    inputStream.close(); // Fermer le flux d'entrée après traitement
   }
 }

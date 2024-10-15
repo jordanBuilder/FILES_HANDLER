@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_print, unused_local_variable, unnecessary_brace_in_string_interps, type_literal_in_constant_pattern
+// ignore_for_file: avoid_print, unused_local_variable, unnecessary_brace_in_string_interps, type_literal_in_constant_pattern, unused_element
 import 'dart:io';
 import 'dart:async';
 import 'package:files_handler/utils/deplacer.dart';
@@ -195,8 +195,8 @@ class Repertoire {
                     if (hasReadableAndWritable(localRepertoire!.permissions)) {
                       print(
                           "Événement détecté dans LOCALE : ${event.runtimeType}, chemin : ${event.path}");
-                        surveillerRepertoire(
-                            Directory(event.path), localRepertoire);
+                      surveillerRepertoire(
+                          Directory(event.path), localRepertoire);
                     }
                   }
 
@@ -365,6 +365,7 @@ class Repertoire {
       final List<FileSystemEntity> entities = await localDir.list().toList();
 
       final eventBaseName = getBaseName(path);
+      // const Duration attente = Duration(seconds: 10);
 
       for (var entity in entities) {
         final entityBaseName = getBaseName(entity.path);
@@ -373,7 +374,8 @@ class Repertoire {
           if (entity is File) {
             try {
               WindowsPopup.showAutoCloseWarning(path);
-              await entity.delete();
+               entity.deleteSync();
+
               print("Fichier supprimé: ${entity.path}");
             } catch (e) {
               if (e is FileSystemException && e.osError?.errorCode == 2) {
@@ -387,7 +389,8 @@ class Repertoire {
           } else if (entity is Directory) {
             try {
               WindowsPopup.showAutoCloseWarning(path);
-              await entity.delete(recursive: true);
+              entity.deleteSync(recursive: true);
+              
               print("Dossier supprimé: $path");
             } catch (e) {
               if (e is FileSystemException && e.osError?.errorCode == 2) {
@@ -417,7 +420,7 @@ class Repertoire {
     try {
       await for (var entity in directory.list(recursive: true)) {
         if (entity.path == pathToFind) {
-          print('Trouvé: $pathToFind');
+          print('Trouvé : $pathToFind');
           return true;
         }
       }

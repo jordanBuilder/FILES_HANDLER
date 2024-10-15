@@ -1,7 +1,6 @@
 // ignore_for_file: avoid_print, unused_local_variable, unnecessary_brace_in_string_interps, depend_on_referenced_packages
 import 'dart:io';
 import 'dart:async';
-import 'package:archive/archive_io.dart';
 import 'package:path/path.dart';
 
 Future<String> deplacer(String sourcePath, String destinationDirPath) async {
@@ -32,7 +31,8 @@ Future<String> deplacer(String sourcePath, String destinationDirPath) async {
       }
 
       final inputStream = sourceFile.openRead(); // Lire le fichier source
-      final outputStream = File(destinationFilePath).openWrite(); // Écrire dans le fichier de destination
+      final outputStream = File(destinationFilePath)
+          .openWrite(); // Écrire dans le fichier de destination
 
       // Copier le contenu du fichier par morceaux
       await inputStream.pipe(outputStream);
@@ -54,7 +54,7 @@ Future<String> deplacer(String sourcePath, String destinationDirPath) async {
           "dossier destination pour le deplacement : ${destinationFolderPath}");
 
       // Si un dossier avec le même nom existe déjà à l'emplacement de destination, le supprimer
-      if (Directory(join(destinationFolderPath, dirName)).existsSync()) {
+      if (Directory(join(destinationFolderPath)).existsSync()) {
         Directory(destinationFolderPath).deleteSync(recursive: true);
         print("Dossier existant supprimé: $destinationFolderPath");
       }
