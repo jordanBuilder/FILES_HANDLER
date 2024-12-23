@@ -1,0 +1,207 @@
+import 'package:files_handler/screens/tinyWindow.dart';
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+
+final _windowsPathRegex =
+    RegExp(r'^[a-zA-Z]:\\[^<>:"/\\|?*\n\r]+(\\[^<>:"/\\|?*\n\r]+)*\\?$');
+
+class HomeScreen extends StatefulWidget {
+  final VoidCallback onResetPaths;
+  const HomeScreen({
+    Key? key,
+    required this.onResetPaths,
+  }) : super(key: key);
+
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _remotePathController = TextEditingController();
+  final _zipPathController = TextEditingController();
+  final _localePathController = TextEditingController();
+
+  Future<void> _savePaths(
+      String remotePath, String zipPath, String localePath) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('remotePath', remotePath);
+    await prefs.setString('zipPath', zipPath);
+    await prefs.setString('localePath', localePath);
+  }
+
+//Fonction de validation des chemins
+
+  String? _validatePath(String? value) {
+    if (value == null || value.isEmpty) {
+      return "Please enter a valid path.";
+    }
+    if (!_windowsPathRegex.hasMatch(value)) {
+      return "Please enter a valid absolute path";
+    }
+    return null;
+  }
+
+  void _submitForm() {
+    if (_formKey.currentState?.validate() ?? false) {
+      // Récupérer les chemins spécifiés
+      final remotePath = _remotePathController.text;
+      final zipPath = _zipPathController.text;
+      final localePath = _localePathController.text;
+
+      _savePaths(remotePath, zipPath, localePath);
+
+      // Afficher le dialogue
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Instances créées'),
+          content: const Text(
+              'Voulez-vous afficher les détails des répertoires créés ?'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                // Fermer le dialogue sans rien faire
+                Navigator.of(context).pop();
+              },
+              child: const Text('Annuler'),
+            ),
+            TextButton(
+              onPressed: () {
+                // Aller vers la page des détails et passer les objets Repertoire
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => TinyWindow(
+                      
+                      onResetPaths: widget.onResetPaths,
+                    ),
+                  ),
+                );
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Color(0xFFFEC868),
+      body: Center(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              flex: 1,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Color(0xFFFEC868),
+                ),
+                child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [Text('Statistiques'), Text('Paramètres')]),
+              ),
+            ),
+            Expanded(
+              flex: 5,
+              child: Padding(
+                padding: const EdgeInsets.all(18.0),
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.all(Radius.circular(25)),
+                    color: Colors.white,
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(88.0),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          const Text(
+                            'FILES HANDLER',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 34,
+                                color: Color(0xFF008631)),
+                          ),
+                          SizedBox(
+                            height: 30,
+                          ),
+                          TextFormField(
+                            controller: _remotePathController,
+                            decoration: const InputDecoration(
+                                labelText: 'REMOTE Path',
+                                enabledBorder: OutlineInputBorder(
+                                    borderSide:
+                                        BorderSide(color: Colors.black)),
+                                icon: Icon(
+                                  Icons.folder,
+                                  color: Colors.red,
+                                  size: 34,
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                    borderSide:
+                                        BorderSide(color: Color(0xFF008631)))),
+                            validator: _validatePath,
+                          ),
+                          SizedBox(
+                            height: 40,
+                          ),
+                          TextFormField(
+                            controller: _zipPathController,
+                            decoration: const InputDecoration(
+                                labelText: 'ZIP Path',
+                                enabledBorder: OutlineInputBorder(
+                                    borderSide:
+                                        BorderSide(color: Colors.black)),
+                                icon: Icon(Icons.folder_zip_rounded,
+                                    color: Colors.red, size: 34),
+                                focusedBorder: OutlineInputBorder(
+                                    borderSide:
+                                        BorderSide(color: Color(0xFF008631)))),
+                            validator: _validatePath,
+                          ),
+                          SizedBox(
+                            height: 40,
+                          ),
+                          TextFormField(
+                            controller: _localePathController,
+                            decoration: const InputDecoration(
+                              labelText: 'LOCALE Path',
+                              enabledBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.black)),
+                              icon: Icon(
+                                Icons.folder,
+                                color: Colors.red,
+                                size: 34,
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                  borderSide:
+                                      BorderSide(color: Color(0xFF008631))),
+                            ),
+                            validator: _validatePath,
+                          ),
+                          const SizedBox(height: 20),
+                          ElevatedButton(
+                            style: ButtonStyle(),
+                            onPressed: _submitForm,
+                            child: const Text('Lancer la surveillance'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

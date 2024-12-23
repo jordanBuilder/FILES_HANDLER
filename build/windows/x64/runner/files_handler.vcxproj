@@ -1,0 +1,319 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Profile|x64">
+      <Configuration>Profile</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{78BE9AFB-4215-30CE-8C97-992E1CAECA83}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0.22621.0</WindowsTargetPlatformVersion>
+    <Platform>x64</Platform>
+    <ProjectName>files_handler</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\Lenovo\Desktop\files_handler\build\windows\x64\runner\Debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">files_handler.dir\Debug\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">files_handler</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</GenerateManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">C:\Users\Lenovo\Desktop\files_handler\build\windows\x64\runner\Profile\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">files_handler.dir\Profile\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">files_handler</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</GenerateManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\Lenovo\Desktop\files_handler\build\windows\x64\runner\Release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">files_handler.dir\Release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">files_handler</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</GenerateManifest>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\Lenovo\Desktop\files_handler\windows;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\cpp_client_wrapper\include;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\.plugin_symlinks\bitsdojo_window_windows\windows\include;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\.plugin_symlinks\desktop_window\windows\include;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\.plugin_symlinks\screen_retriever_windows\windows\include;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\.plugin_symlinks\system_tray\windows\include;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\.plugin_symlinks\window_manager\windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>"4100"</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;_HAS_EXCEPTIONS=0;_DEBUG;FLUTTER_VERSION="1.0.0+1";FLUTTER_VERSION_MAJOR=1;FLUTTER_VERSION_MINOR=0;FLUTTER_VERSION_PATCH=0;FLUTTER_VERSION_BUILD=1;NOMINMAX;UNICODE;_UNICODE;CMAKE_INTDIR="Debug"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_DEBUG;_WINDOWS;_HAS_EXCEPTIONS=0;FLUTTER_VERSION=\"1.0.0+1\";FLUTTER_VERSION_MAJOR=1;FLUTTER_VERSION_MINOR=0;FLUTTER_VERSION_PATCH=0;FLUTTER_VERSION_BUILD=1;NOMINMAX;UNICODE;_UNICODE;CMAKE_INTDIR=\"Debug\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\Lenovo\Desktop\files_handler\windows;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\cpp_client_wrapper\include;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\.plugin_symlinks\bitsdojo_window_windows\windows\include;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\.plugin_symlinks\desktop_window\windows\include;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\.plugin_symlinks\screen_retriever_windows\windows\include;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\.plugin_symlinks\system_tray\windows\include;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\.plugin_symlinks\window_manager\windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\Lenovo\Desktop\files_handler\windows;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\cpp_client_wrapper\include;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\.plugin_symlinks\bitsdojo_window_windows\windows\include;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\.plugin_symlinks\desktop_window\windows\include;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\.plugin_symlinks\screen_retriever_windows\windows\include;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\.plugin_symlinks\system_tray\windows\include;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\.plugin_symlinks\window_manager\windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>..\flutter\Debug\flutter_wrapper_app.lib;dwmapi.lib;..\plugins\bitsdojo_window_windows\Debug\bitsdojo_window_windows_plugin.lib;..\plugins\desktop_window\Debug\desktop_window_plugin.lib;..\plugins\screen_retriever_windows\Debug\screen_retriever_windows_plugin.lib;..\plugins\system_tray\Debug\system_tray_plugin.lib;..\plugins\window_manager\Debug\window_manager_plugin.lib;..\flutter\Debug\flutter_wrapper_plugin.lib;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\flutter_windows.dll.lib;Dwmapi.lib;Comctl32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>C:/Users/Lenovo/Desktop/files_handler/build/windows/x64/runner/Debug/files_handler.lib</ImportLibrary>
+      <ProgramDataBaseFile>C:/Users/Lenovo/Desktop/files_handler/build/windows/x64/runner/Debug/files_handler.pdb</ProgramDataBaseFile>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+    <Manifest>
+      <AdditionalManifestFiles>C:\Users\Lenovo\Desktop\files_handler\windows\runner\runner.exe.manifest;</AdditionalManifestFiles>
+    </Manifest>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\Lenovo\Desktop\files_handler\windows;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\cpp_client_wrapper\include;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\.plugin_symlinks\bitsdojo_window_windows\windows\include;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\.plugin_symlinks\desktop_window\windows\include;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\.plugin_symlinks\screen_retriever_windows\windows\include;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\.plugin_symlinks\system_tray\windows\include;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\.plugin_symlinks\window_manager\windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <DisableSpecificWarnings>"4100"</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;_HAS_EXCEPTIONS=0;FLUTTER_VERSION="1.0.0+1";FLUTTER_VERSION_MAJOR=1;FLUTTER_VERSION_MINOR=0;FLUTTER_VERSION_PATCH=0;FLUTTER_VERSION_BUILD=1;NOMINMAX;UNICODE;_UNICODE;CMAKE_INTDIR="Profile"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;_HAS_EXCEPTIONS=0;FLUTTER_VERSION=\"1.0.0+1\";FLUTTER_VERSION_MAJOR=1;FLUTTER_VERSION_MINOR=0;FLUTTER_VERSION_PATCH=0;FLUTTER_VERSION_BUILD=1;NOMINMAX;UNICODE;_UNICODE;CMAKE_INTDIR=\"Profile\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\Lenovo\Desktop\files_handler\windows;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\cpp_client_wrapper\include;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\.plugin_symlinks\bitsdojo_window_windows\windows\include;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\.plugin_symlinks\desktop_window\windows\include;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\.plugin_symlinks\screen_retriever_windows\windows\include;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\.plugin_symlinks\system_tray\windows\include;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\.plugin_symlinks\window_manager\windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\Lenovo\Desktop\files_handler\windows;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\cpp_client_wrapper\include;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\.plugin_symlinks\bitsdojo_window_windows\windows\include;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\.plugin_symlinks\desktop_window\windows\include;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\.plugin_symlinks\screen_retriever_windows\windows\include;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\.plugin_symlinks\system_tray\windows\include;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\.plugin_symlinks\window_manager\windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>..\flutter\Profile\flutter_wrapper_app.lib;dwmapi.lib;..\plugins\bitsdojo_window_windows\Profile\bitsdojo_window_windows_plugin.lib;..\plugins\desktop_window\Profile\desktop_window_plugin.lib;..\plugins\screen_retriever_windows\Profile\screen_retriever_windows_plugin.lib;..\plugins\system_tray\Profile\system_tray_plugin.lib;..\plugins\window_manager\Profile\window_manager_plugin.lib;..\flutter\Profile\flutter_wrapper_plugin.lib;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\flutter_windows.dll.lib;Dwmapi.lib;Comctl32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>C:/Users/Lenovo/Desktop/files_handler/build/windows/x64/runner/Profile/files_handler.lib</ImportLibrary>
+      <ProgramDataBaseFile>C:/Users/Lenovo/Desktop/files_handler/build/windows/x64/runner/Profile/files_handler.pdb</ProgramDataBaseFile>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+    <Manifest>
+      <AdditionalManifestFiles>C:\Users\Lenovo\Desktop\files_handler\windows\runner\runner.exe.manifest;</AdditionalManifestFiles>
+    </Manifest>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\Lenovo\Desktop\files_handler\windows;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\cpp_client_wrapper\include;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\.plugin_symlinks\bitsdojo_window_windows\windows\include;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\.plugin_symlinks\desktop_window\windows\include;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\.plugin_symlinks\screen_retriever_windows\windows\include;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\.plugin_symlinks\system_tray\windows\include;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\.plugin_symlinks\window_manager\windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <DisableSpecificWarnings>"4100"</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;_HAS_EXCEPTIONS=0;FLUTTER_VERSION="1.0.0+1";FLUTTER_VERSION_MAJOR=1;FLUTTER_VERSION_MINOR=0;FLUTTER_VERSION_PATCH=0;FLUTTER_VERSION_BUILD=1;NOMINMAX;UNICODE;_UNICODE;CMAKE_INTDIR="Release"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;_HAS_EXCEPTIONS=0;FLUTTER_VERSION=\"1.0.0+1\";FLUTTER_VERSION_MAJOR=1;FLUTTER_VERSION_MINOR=0;FLUTTER_VERSION_PATCH=0;FLUTTER_VERSION_BUILD=1;NOMINMAX;UNICODE;_UNICODE;CMAKE_INTDIR=\"Release\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\Lenovo\Desktop\files_handler\windows;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\cpp_client_wrapper\include;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\.plugin_symlinks\bitsdojo_window_windows\windows\include;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\.plugin_symlinks\desktop_window\windows\include;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\.plugin_symlinks\screen_retriever_windows\windows\include;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\.plugin_symlinks\system_tray\windows\include;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\.plugin_symlinks\window_manager\windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\Lenovo\Desktop\files_handler\windows;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\cpp_client_wrapper\include;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\.plugin_symlinks\bitsdojo_window_windows\windows\include;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\.plugin_symlinks\desktop_window\windows\include;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\.plugin_symlinks\screen_retriever_windows\windows\include;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\.plugin_symlinks\system_tray\windows\include;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\.plugin_symlinks\window_manager\windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>..\flutter\Release\flutter_wrapper_app.lib;dwmapi.lib;..\plugins\bitsdojo_window_windows\Release\bitsdojo_window_windows_plugin.lib;..\plugins\desktop_window\Release\desktop_window_plugin.lib;..\plugins\screen_retriever_windows\Release\screen_retriever_windows_plugin.lib;..\plugins\system_tray\Release\system_tray_plugin.lib;..\plugins\window_manager\Release\window_manager_plugin.lib;..\flutter\Release\flutter_wrapper_plugin.lib;C:\Users\Lenovo\Desktop\files_handler\windows\flutter\ephemeral\flutter_windows.dll.lib;Dwmapi.lib;Comctl32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>C:/Users/Lenovo/Desktop/files_handler/build/windows/x64/runner/Release/files_handler.lib</ImportLibrary>
+      <ProgramDataBaseFile>C:/Users/Lenovo/Desktop/files_handler/build/windows/x64/runner/Release/files_handler.pdb</ProgramDataBaseFile>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+    <Manifest>
+      <AdditionalManifestFiles>C:\Users\Lenovo\Desktop\files_handler\windows\runner\runner.exe.manifest;</AdditionalManifestFiles>
+    </Manifest>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\Lenovo\Desktop\files_handler\windows\runner\CMakeLists.txt">
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Building Custom Rule C:/Users/Lenovo/Desktop/files_handler/windows/runner/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
+"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -SC:/Users/Lenovo/Desktop/files_handler/windows -BC:/Users/Lenovo/Desktop/files_handler/build/windows/x64 --check-stamp-file C:/Users/Lenovo/Desktop/files_handler/build/windows/x64/runner/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\Lenovo\Desktop\files_handler\build\windows\x64\runner\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">Building Custom Rule C:/Users/Lenovo/Desktop/files_handler/windows/runner/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">setlocal
+"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -SC:/Users/Lenovo/Desktop/files_handler/windows -BC:/Users/Lenovo/Desktop/files_handler/build/windows/x64 --check-stamp-file C:/Users/Lenovo/Desktop/files_handler/build/windows/x64/runner/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">C:\Users\Lenovo\Desktop\files_handler\build\windows\x64\runner\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Building Custom Rule C:/Users/Lenovo/Desktop/files_handler/windows/runner/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
+"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -SC:/Users/Lenovo/Desktop/files_handler/windows -BC:/Users/Lenovo/Desktop/files_handler/build/windows/x64 --check-stamp-file C:/Users/Lenovo/Desktop/files_handler/build/windows/x64/runner/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\Lenovo\Desktop\files_handler\build\windows\x64\runner\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="C:\Users\Lenovo\Desktop\files_handler\windows\runner\flutter_window.cpp" />
+    <ClCompile Include="C:\Users\Lenovo\Desktop\files_handler\windows\runner\main.cpp" />
+    <ClCompile Include="C:\Users\Lenovo\Desktop\files_handler\windows\runner\utils.cpp" />
+    <ClCompile Include="C:\Users\Lenovo\Desktop\files_handler\windows\runner\win32_window.cpp" />
+    <ClCompile Include="C:\Users\Lenovo\Desktop\files_handler\windows\flutter\generated_plugin_registrant.cc" />
+    <ResourceCompile Include="C:\Users\Lenovo\Desktop\files_handler\windows\runner\Runner.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="C:\Users\Lenovo\Desktop\files_handler\build\windows\x64\ZERO_CHECK.vcxproj">
+      <Project>{E77C5BFF-9096-3A9B-BFB5-569E454EC7E2}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\Lenovo\Desktop\files_handler\build\windows\x64\plugins\bitsdojo_window_windows\bitsdojo_window_windows_plugin.vcxproj">
+      <Project>{FC9F286E-0510-3C55-B707-C512123076A1}</Project>
+      <Name>bitsdojo_window_windows_plugin</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\Lenovo\Desktop\files_handler\build\windows\x64\plugins\desktop_window\desktop_window_plugin.vcxproj">
+      <Project>{F188D0B6-D557-37BC-BE81-227A1539A6AE}</Project>
+      <Name>desktop_window_plugin</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\Lenovo\Desktop\files_handler\build\windows\x64\flutter\flutter_assemble.vcxproj">
+      <Project>{C5B3CBEC-8FA1-3BB8-A8EF-D8E41E0F7A46}</Project>
+      <Name>flutter_assemble</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\Lenovo\Desktop\files_handler\build\windows\x64\flutter\flutter_wrapper_app.vcxproj">
+      <Project>{E65845AB-731F-3E89-9CA8-BF17E494E3A2}</Project>
+      <Name>flutter_wrapper_app</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\Lenovo\Desktop\files_handler\build\windows\x64\flutter\flutter_wrapper_plugin.vcxproj">
+      <Project>{2AEF58C4-C4CB-3784-AA88-0080B088B28F}</Project>
+      <Name>flutter_wrapper_plugin</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\Lenovo\Desktop\files_handler\build\windows\x64\plugins\screen_retriever_windows\screen_retriever_windows_plugin.vcxproj">
+      <Project>{A2162CED-3821-37A9-B5B3-4425FC618080}</Project>
+      <Name>screen_retriever_windows_plugin</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\Lenovo\Desktop\files_handler\build\windows\x64\plugins\system_tray\system_tray_plugin.vcxproj">
+      <Project>{6CC522AD-7FE9-3A9D-A9B1-E643E0F81137}</Project>
+      <Name>system_tray_plugin</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\Lenovo\Desktop\files_handler\build\windows\x64\plugins\window_manager\window_manager_plugin.vcxproj">
+      <Project>{2CF6EE95-E3D1-301D-AC1E-6C3B86526ACD}</Project>
+      <Name>window_manager_plugin</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

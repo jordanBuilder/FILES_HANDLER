@@ -1,0 +1,1 @@
+ C:\\Users\\Lenovo\\Desktop\\files_handler\\.dart_tool\\flutter_build\\2f013b35d135e20816967ceea59f0787\\native_assets.yaml: 
