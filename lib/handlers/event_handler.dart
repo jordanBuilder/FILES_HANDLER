@@ -3,8 +3,12 @@ import 'dart:io';
 import 'package:files_handler/models/repertoire.dart';
 import 'package:files_handler/utils/deplacer.dart';
 import 'package:files_handler/utils/dezipper.dart';
+import 'package:files_handler/utils/isStableSinceOneMinute.dart';
+import 'package:files_handler/utils/zipper.dart';
 
 class EventHandlers {
+
+  
   Future<void> handleCreateEvent(
     FileSystemCreateEvent event,
     Repertoire? remoteRepertoire,
@@ -42,11 +46,25 @@ class EventHandlers {
 
   Future<void> handleModifyEvent(
     FileSystemModifyEvent event,
-    Repertoire? repertoireSurveille,
+    Repertoire? remoteRepertoire,
     Repertoire? zipRepertoire,
-    Repertoire? destinationRepertoire,
+    Repertoire? localRepertoire,
   ) async {
     print("Modification détectée : ${event.path}");
+     try {
+      if (File(event.path).existsSync() &&
+          File(event.path).parent.toString().contains("LOCALE") &&
+          !File(event.path).parent.toString().contains("REMOTE")) {
+        print(
+            "Evenement de modification détecté dans LOCALE: ${event.runtimeType}, vers le chemin: ${event.path}");
+            if(await estStableDepuisUneMinute(event.path)){      
+        String extractedPath = await zipper(event.path, zipRepertoire!.path);
+        await deplacer(extractedPath, remoteRepertoire!.path);
+            } 
+      }
+    } catch (e) {
+      print(e);
+    }
   }
 
   void handleDeleteEvent(

@@ -1,3 +1,8 @@
+import 'dart:io';
+
+import 'package:files_handler/handlers/event_handler.dart';
+import 'package:files_handler/handlers/event_watcher.dart';
+import 'package:files_handler/models/repertoire.dart';
 import 'package:files_handler/screens/tinyWindow.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -29,6 +34,30 @@ class _HomeScreenState extends State<HomeScreen> {
     await prefs.setString('remotePath', remotePath);
     await prefs.setString('zipPath', zipPath);
     await prefs.setString('localePath', localePath);
+
+    List<String> repertoirePaths = [remotePath, zipPath, localePath];
+
+    final List<EventWatcher> watchers = [];
+
+    final zipRepertoire = Repertoire(zipPath);
+    final remoteRepertoire = Repertoire(remotePath);
+    final localeRepertoire = Repertoire(localePath);
+
+    for (String path in repertoirePaths) {
+      final directory = Directory(path);
+      if (directory.existsSync()) {
+        final eventHandlers = EventHandlers();
+
+        final watcher = EventWatcher(directory, eventHandlers, zipRepertoire,
+            remoteRepertoire, localeRepertoire);
+
+        watchers.add(watcher);
+
+        watcher.startWatching();
+
+        print("Surveillance démarrée pour $path");
+      }
+    }
   }
 
 //Fonction de validation des chemins
@@ -58,7 +87,7 @@ class _HomeScreenState extends State<HomeScreen> {
         builder: (context) => AlertDialog(
           title: const Text('Instances créées'),
           content: const Text(
-              'Voulez-vous afficher les détails des répertoires créés ?'),
+              'Etes-vous sûrs de vouloir commencer la surveillance ?'),
           actions: <Widget>[
             TextButton(
               onPressed: () {
@@ -69,11 +98,11 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             TextButton(
               onPressed: () {
+
                 // Aller vers la page des détails et passer les objets Repertoire
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (context) => TinyWindow(
-                      
+                    builder: (context) => TinyWindow(   
                       onResetPaths: widget.onResetPaths,
                     ),
                   ),

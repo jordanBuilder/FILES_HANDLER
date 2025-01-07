@@ -49,7 +49,7 @@ class EventWatcher {
             break;
           case FileSystemModifyEvent:
             if (event is FileSystemModifyEvent) {
-              eventHandlers.handleModifyEvent(event, null, null, null);
+              eventHandlers.handleModifyEvent(event, remoteRepertoire, zipRepertoire, localeRepertoire);
             }
             break;
           case FileSystemDeleteEvent:
@@ -83,8 +83,8 @@ class EventWatcher {
   }
 
   void _handleCreate(FileSystemCreateEvent event) {
-    final newEntity = FileSystemEntity.typeSync(event.path);
-    if (newEntity == FileSystemEntityType.directory) {
+    final newEntityType = FileSystemEntity.typeSync(event.path);
+    if (newEntityType == FileSystemEntityType.directory) {
       // Surveiller les nouveaux sous-répertoires créés
       _watchDirectory(Directory(event.path));
       _watchSubdirectories(Directory(event.path));
