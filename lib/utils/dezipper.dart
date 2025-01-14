@@ -20,7 +20,11 @@ Future<String> dezipper(String zipPath, String destinationPath) async {
       // Chemin normalisé pour le fichier/dossier extrait
 
       final filenameAtTheDestination =
-          join(destinationPath, normalize(file.name));
+          canonicalize(join(destinationPath, file.name));
+      if (!filenameAtTheDestination.startsWith(destinationPath)) {
+        throw Exception('Chemin invalide dans l\'archive: ${file.name}');
+      }
+      
       print("Chemin normalisé: $filenameAtTheDestination");
 
       if (file.isFile) {
@@ -54,8 +58,9 @@ Future<String> dezipper(String zipPath, String destinationPath) async {
       }
 
       if (firstExtractedPath.isEmpty) {
-        firstExtractedPath =
-            filenameAtTheDestination; // Enregistrer le premier chemin extrait
+        firstExtractedPath = filenameAtTheDestination;
+        print(
+            "nom du fichier à la destination: $filenameAtTheDestination"); // Enregistrer le premier chemin extrait
       }
     }
 
