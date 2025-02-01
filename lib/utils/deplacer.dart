@@ -34,6 +34,7 @@ Future<String> deplacer(String sourcePath, String destinationDirPath) async {
       final outputStream = File(destinationFilePath)
           .openWrite(); // Écrire dans le fichier de destination
 
+      // Si c'est un dossier
       // Copier le contenu du fichier par morceaux
       await inputStream.pipe(outputStream);
 
@@ -43,7 +44,6 @@ Future<String> deplacer(String sourcePath, String destinationDirPath) async {
       print("Fichier déplacé avec succès vers $destinationFilePath");
       return "Fichier déplacé avec succès vers $destinationFilePath";
     } else if (entityType == FileSystemEntityType.directory) {
-      // Si c'est un dossier
       print(sourcePath);
       final sourceDir = Directory(sourcePath);
       print("sourceDir: $sourceDir");
@@ -60,7 +60,7 @@ Future<String> deplacer(String sourcePath, String destinationDirPath) async {
       }
 
       // Renommer le dossier (déplacer)
-      sourceDir.renameSync(destinationFolderPath);
+      sourceDir.renameSync(Directory(destinationFolderPath).path);
       //  await copyDirectory(sourceDir,destinationDir);
 
       print("Dossier déplacé avec succès vers $destinationFolderPath");

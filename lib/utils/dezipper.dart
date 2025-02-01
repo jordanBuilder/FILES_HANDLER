@@ -8,6 +8,7 @@ import 'package:archive/archive_io.dart';
 
 Future<String> dezipper(String zipPath, String destinationPath) async {
   print('on va commencer le dezip');
+
   final inputStream = InputFileStream(zipPath);
   try {
     // Lecture du fichier ZIP avec un InputStream
@@ -18,13 +19,12 @@ Future<String> dezipper(String zipPath, String destinationPath) async {
     // Extraction de chaque fichier
     for (var file in archive) {
       // Chemin normalisé pour le fichier/dossier extrait
-
       final filenameAtTheDestination =
-          canonicalize(join(destinationPath, file.name));
+          normalize(join(destinationPath, file.name));
       if (!filenameAtTheDestination.startsWith(destinationPath)) {
         throw Exception('Chemin invalide dans l\'archive: ${file.name}');
       }
-      
+
       print("Chemin normalisé: $filenameAtTheDestination");
 
       if (file.isFile) {
