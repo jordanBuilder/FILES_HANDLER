@@ -28,6 +28,8 @@ Future<String> dezipper(String zipPath, String destinationPath) async {
       print("Chemin normalisé: $filenameAtTheDestination");
 
       if (file.isFile) {
+        print("C'est un fichier");
+
         // Si c'est un fichier
         final outputFile = File(filenameAtTheDestination);
 
@@ -50,6 +52,7 @@ Future<String> dezipper(String zipPath, String destinationPath) async {
           await outputStream.close();
         } // Fermer le flux après écriture
       } else {
+        print("C'est un dossier");
         // Si c'est un répertoire, créer le répertoire
         final dir = Directory(filenameAtTheDestination);
         if (!dir.existsSync()) {
@@ -71,5 +74,7 @@ Future<String> dezipper(String zipPath, String destinationPath) async {
     throw e;
   } finally {
     inputStream.close(); // Fermer le flux d'entrée après traitement
+    //await Future.delayed(Duration(seconds: 15));
+
   }
 }

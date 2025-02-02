@@ -22,7 +22,10 @@ class EventHandlers {
         print(
             "Evenement de création détecté dans REMOTE: ${event.runtimeType}, vers le chemin: ${event.path}");
         String extractedPath = await dezipper(event.path, zipRepertoire!.path);
-        deplacer(extractedPath, localRepertoire!.path);
+        if (localRepertoire != null) {
+          print("Deplacement vers ${localRepertoire.path}");
+          await deplacer(extractedPath, localRepertoire.path);
+        }
       }
     } catch (e) {
       print(e);

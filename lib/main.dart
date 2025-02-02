@@ -33,10 +33,10 @@ void main() async {
     for (String path in repertoirePaths) {
       final directory = Directory(path);
       if (directory.existsSync()) {
-
         final eventHandlers = EventHandlers();
 
-        final watcher = EventWatcher(directory, eventHandlers, zipRepertoire, remoteRepertoire, localeRepertoire);
+        final watcher = EventWatcher(directory, eventHandlers, zipRepertoire,
+            remoteRepertoire, localeRepertoire);
 
         watchers.add(watcher);
 
@@ -45,7 +45,6 @@ void main() async {
         print("Surveillance démarrée pour $path");
       }
     }
-
     runApp(MyApp(
       showHomeScreen: false,
     ));
